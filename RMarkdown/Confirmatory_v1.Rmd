@@ -103,7 +103,7 @@ Code chunks are hidden by default, but can be made visible by clicking "Show cod
  
 ```{r, warning = FALSE, echo = TRUE, code_folding = "Show code loading and preparing the data", message = FALSE}
 #Local data
-localfolder <- "C:/Users/U941163/Desktop/Raphael/projects/VENI-local/" #THIS NEEDS TO BE CHANGED
+localfolder <- paste0(dirname(localfolder), '/dataset/') #THIS WILL NEED TO POINT TO A DATASET FOLDER WHERE THE RAW DATA IS DOWNLOADED TO
 
 #lets set all the data folders
 rawd      <- paste0(localfolder, 'Trials/')    #raw trial level data
