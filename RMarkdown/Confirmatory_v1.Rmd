@@ -78,15 +78,8 @@ library(lmerTest) #for statistical modeling
 library(emmeans) #for post-hoc analysis
 library(broom.mixed) #for turning fitted models into tidy data frames
 
-#for running python in Rmarkdown
-#Sys.setenv("RETICULATE_PYTHON" = "C:/ProgramData/Anaconda3/") # put in your python source
-#library(reticulate) # for running python code in Rmarkdown
-#if issues with recilate (download the developer version)
- #remotes::install_github("rstudio/reticulate", force = TRUE)
-
-#setwd(normalizePath(".."))
 r_refs("references.bib")
-#curfol <- normalizePath("..") #set working drive to current
+
 
 ```
 This document contains further information on the supporting methods and results of "The human voice aligns with whole-body kinetics".
@@ -94,12 +87,12 @@ For clarity, it is indicated on the right, what sections in the paper the respec
 Code chunks are hidden by default, but can be made visible by clicking "Show code".
 
 # Supporting methods and results
- This is a fully computationally reproducible manuscript written in R Markdown. The full dataset is available at the Donders Repository (DSC link).
+ This is a fully computationally reproducible manuscript written in R Markdown. The full dataset is available at the Donders Repository (redacted for review).
  
 <aside>
 <span style="color: red;"> This refers to the section "Supporting information" of the paper.
 </span>
-</aside> 
+</aside>
  
 ```{r, warning = FALSE, echo = TRUE, code_folding = "Show code loading and preparing the data", message = FALSE}
 #Local data
@@ -227,7 +220,7 @@ knitr::include_graphics(paste0(basefolder, '/after_edited_plots/emg_measurements
 <aside>
 <span style="color: red;"> This refers to Figure S1 in the paper.
 </span>
-</aside> 
+</aside>
 
 We attached electrodes for focal muscles which directly participate in the internal (pectoralis major) and external rotation (infraspinatus) of the humerus. Electrodes were applied for focal muscles ipsilaterally (relative to the dominant hand). We attached electrodes to the muscle belly of the clavicular head of the pectoralis major, with a ground electrode on the clavicle on the opposite side.  
 We also attached electrodes for postural muscles which will likely anticipate and react to postural perturbations due to upper limb movements. Since these muscles should act in the opposite direction of the postural perturbation of the dominant hand, we applied electrodes contralaterally to the dominant hand. We attach electrodes to the rectus abdominis, with a ground electrode on the iliac crest on the opposite side. We also attached electrodes to the erector spinae muscle group (specifically, the iliocostalis lumborum).
@@ -1046,7 +1039,7 @@ This is referred to as Table S2 in the paper.
 </aside>
 
 ## Exploratory visualization
-Fig. S\@ref(fig:smoothedconditionalmeans) shows the amplitude envelope and EMG activity of a 1-second interval around the movement onset. This plot is informative about the rationale of the confirmatory analyses. Firstly, it can be seen that in general there is a positive peak during a movement onset in the amplitude envelope (relative to the trend line for that vocalization), that may or may not be *preceded* by a less extreme negative peak. Especially, for the internal rotation we observe such a negative peak. We will therefore assess whether particular movement conditions predict higher magnitude negative and positive peaks in the amplitude envelope ([analysis 1](#analysis-1)). We further assess whether particular muscles predict the magnitude of positive or negative peaks ([analysis 2](#analysis-2)). Finally, we will assess whether particular muscles are related to postural stability, to confirm the posture-mediating role of the muscles ([analysis 3](#analysis-3)). While we focus in this pre-registration and pilot analyses report on the peak analyses (in part to support a more straightforward power analysis), in the confirmatory study we may perform continuous trajectory analysis using generalized additive modeling similar to previous work [@pearsonGestureVocalCoupling2022].
+Fig. S\@ref(fig:smoothedconditionalmeans) shows the amplitude envelope and EMG activity of a 1-second interval around the movement onset. This plot is informative about the rationale of the confirmatory analyses. Firstly, it can be seen that in general there is a positive peak during a movement onset in the amplitude envelope (relative to the trend line for that vocalization), that may or may not be *preceded* by a less extreme negative peak. Especially, for the internal rotation we observe such a negative peak. We will therefore assess whether particular movement conditions predict higher magnitude negative and positive peaks in the amplitude envelope ([analysis 1](#analysis-1)). We further assess whether particular muscles predict the magnitude of positive or negative peaks ([analysis 2](#analysis-2)). Finally, we will assess whether particular muscles are related to postural stability, to confirm the posture-mediating role of the muscles ([analysis 3](#analysis-3)). In the current confirmatory analyses we focus on investigating the relationship between peaks, i.e. local minima and maxima in the different signals. This type of analysis is supported by a more straightforward power analysis than more complex continuous approaches (e.g. Generalized Additive Mixed Models, as underlying Fig. S\@ref(fig:smoothedconditionalmeans)).
 
 \pagebreak 
 ```{r, cache = TRUE, echo = TRUE, message = FALSE, warning = FALSE, code_folding = "Show code producing the plot"}
