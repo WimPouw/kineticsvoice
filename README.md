@@ -7,5 +7,7 @@ docs - This contains our html pages, such as the knitted Rmarkdown file
 
 RMarkdown - Contains the Rmarkdown script for generation the supporting information
 
+pre_registration_copy - Contains a copy of the timestamped pre-registration (with redacted names)
+
 # Contact
 wim.pouw@donders.ru.nl
