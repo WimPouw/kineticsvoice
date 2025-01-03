@@ -1,0 +1,3106 @@
+---
+title: "The human voice aligns with whole-body kinetics"
+description: | 
+  Supporting information
+author:
+- name: Wim Pouw
+  corresponding: yes
+  email: wim.pouw@donders.ru.nl
+  url: https://wimpouw.com/
+  affiliation: Donders Institute for Brain, Cognition, and Behaviour
+  affiliation_url: https://www.ru.nl/donders/
+  orcid_id: 0000-0003-2729-6502
+  address: Thomas van Aquinolaan 4, 6525 AJ Nijmegen, The Netherlands
+- name: Raphael Werner
+  url: https://raphael-werner.github.io/
+  affiliation: Donders Institute for Brain, Cognition, and Behaviour
+  affiliation_url: https://www.ru.nl/donders/
+  orcid_id: 0000-0002-4080-7883
+- name: Lara Burchardt
+  url: https://github.com/LSBurchardt
+  affiliation: Humboldt University Berlin, Germany
+  affiliation_url: https://www.leibniz-zas.de/en/
+  orcid_id: 0000-0002-9210-7934
+- name: Luc Selen
+  url: https://www.ru.nl/sensorimotorlab/people/current-members/luc-selen/
+  affiliation: Donders Institute for Brain, Cognition, and Behaviour
+  affiliation_url: https://www.ru.nl/donders/
+  orcid_id: 0000-0001-5774-5415
+output:
+  distill::distill_article:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+# output: word_document
+# always_allow_html: true
+
+shorttitle: Muscular and postural effects of upper limb movements on voicing
+
+bibliography: references.bib
+floatsintext: yes
+figurelist: no
+tablelist: no
+footnotelist: no
+linenumbers: yes
+mask: no
+draft: no
+noextraspace: yes
+link-citations: yes
+---
+```{r, include = FALSE, code_folding = TRUE}
+set.seed(42)
+knitr::opts_chunk$set(cache.extra = knitr::rand_seed)
+knitr::opts_knit$set(root.dir =normalizePath("."))
+#basefolder <- as.character(normalizePath(".")) #make sure to set the wd to source file location
+basefolder <- dirname(rstudioapi::getSourceEditorContext()$path)
+```
+
+```{r setup, echo = FALSE, message = FALSE, warning = FALSE, code_folding = "Show code setting up the packages"}
+#R-packages
+library(papaja)   #for Rmarkdown template for APA(ish) manuscript
+library(distill) #for html output
+library(ggplot2)    #for plotting
+library(gridExtra)  #for plotting in panels
+library(knitr)  #for document generation
+library(magick)  #for plots
+library(cowplot) #for plots
+library(plyr) #for revalue
+library(tinytex) #for outputting pdfs
+library(readr)  #for data reading
+library(bookdown) #for crossreferencing
+library(rstudioapi) #for setting file paths
+library(kableExtra) #for producing nicer tables
+library(dplyr) #for data wrangling
+library(ggbeeswarm) #for beeswarm plots
+library(modelsummary) #for handling model summary tables
+library(lme4) #for statistical modeling
+library(lmerTest) #for statistical modeling
+library(emmeans) #for post-hoc analysis
+library(broom.mixed) #for turning fitted models into tidy data frames
+library(tidyr) # data wrangling functions
+
+r_refs("references.bib")
+
+
+```
+This document contains further information on the supporting methods and results of "The human voice aligns with whole-body kinetics".
+For clarity, it is indicated on the right, what sections in the paper the respective part refers to.
+Code chunks are hidden by default, but can be made visible by clicking "Show code".
+
+# Supporting methods and results
+ This is a fully computationally reproducible manuscript written in R Markdown. The full dataset is available at the Donders Repository (redacted for review).
+ 
+<aside>
+<span style="color: red;"> This refers to the section "Supporting information" of the paper.
+</span>
+</aside>
+ 
+```{r, warning = FALSE, echo = TRUE, code_folding = "Show code loading and preparing the data", message = FALSE}
+#Local data
+localfolder <- "F:/VENI_data_local/exp100/"#"C:/Users/U941163/Desktop/Raphael/projects/VENI-local/" #THIS NEEDS TO BE CHANGED
+
+#lets set all the data folders
+rawd      <- paste0(localfolder, 'Trials/')    #raw trial level data
+procd     <- paste0(localfolder, 'Processed/triallevel/') #processed data folder
+procdtot  <- paste0(localfolder, 'Processed/complete_datasets/') #processed data folder
+daset     <- paste0(localfolder, 'Dataset/')   #dataset folder
+meta      <- paste0(localfolder, 'Meta/')   #Meta and trial data
+
+#load in the trialinfo data (containing info like condition order, trial number etc)
+trialf    <- list.files(meta, pattern = 'triallist*')
+triallist <- data.frame()
+for(i in trialf)
+{
+  tr        <- read.csv(paste0(meta, i), sep = ';')
+  tr$ppn    <- parse_number(i)
+  triallist <- rbind.data.frame(triallist,tr)
+}
+
+#make corrections to trial list due to experimenter errors
+  # p10 trial 21 run with a weight
+triallist$weight_condition[triallist$ppn==10 & triallist$trial=="21"] <- 'weight' #triallist$trialindex[triallist$ppn==10 & triallist$trial=="21"]
+  # p14 double check trial "51", "52", "53" were all weight condition
+triallist$weight_condition[triallist$ppn==14 & triallist$trial%in% c("51", "52", "53")] <- 'weight' #triallist$trialindex[triallist$ppn==14 & triallist$trial%in% c("51", "52", "53")]
+
+
+#load in the metainfo data (containing info like gender, handedness, etc)
+mtf     <- list.files(meta, pattern = 'bodymeta*')
+mtlist  <- data.frame()
+for(i in mtf)
+{
+  tr      <- read.csv(paste0(meta, i), sep = ';')
+  mtlist  <- rbind.data.frame(mtlist,tr)
+}
+mtlist$ppn <- parse_number(as.character(mtlist$ppn))
+
+
+```
+
+# Supporting methods
+This research has been approved by the Ethics Committee Social Sciences (ECSS) of the Radboud University (reference nr.: 22N.002642). This study has been pre-registered before data collection (see (preregistration)[https://osf.io/jhdq4]).
+
+```{r, warning = FALSE, echo = TRUE, code_folding = "Show code adding participant and condition information", message = FALSE}
+# add some info about the dataset
+participants  <- c(unique(mtlist$ppn))
+numpart       <- length(participants)
+
+# number & percentage female & male participants
+part_fem <- round(sum(mtlist$sex=='f'), 1)
+perc_fem  <- round((sum(mtlist$sex=='f')/numpart)*100, 1)
+part_male <- round(sum(mtlist$sex=='m'), 1)
+perc_male <- round((sum(mtlist$sex=='m')/numpart)*100, 1)
+
+# body info
+m_age           <- round(mean(mtlist$age), 1)
+sd_age          <- round(sd(mtlist$age), 1)
+m_weight        <- round(mean(mtlist$weight), 1)
+sd_weight       <- round(sd(mtlist$weight), 1)
+m_height        <- round(mean(mtlist$height), 1)
+sd_height       <- round(sd(mtlist$height), 1)
+bmi             <- mtlist$weight/((mtlist$height/100)^2)
+m_bmi           <- round(mean(bmi), 1)
+sd_bmi          <- round(sd(bmi), 1)
+
+# other body measurements
+  # Function to calculate the mean of a character vector
+  mean_of_char_vector <- function(vec) {
+    mean(as.numeric(vec))}
+
+# we also measure upper/under arm length (but will leave it at this)
+skinfold  <- strsplit(mtlist$upperarmfold, '_')
+# Applying the function to each element of the list
+skinfs    <- sapply(skinfold, mean_of_char_vector)
+m_skin    <- round(mean(skinfs), 1)
+sd_skin   <- round(sd(skinfs), 1)
+
+
+# read data
+tr_wd <- read.csv(paste0(procdtot, 'fulldata.csv'))
+tr_wd <- subset(tr_wd, trialindex > 8 & vocal_condition=='vocalize') #only real trials and only vocalization
+numtrials = nrow(tr_wd)
+perc_w = round((sum(tr_wd$weight_condition=='weight')/numtrials)*100, 1) #percentage weight
+perc_pas = round((sum(tr_wd$movement_condition=='no movement')/numtrials)*100, 1) #percentage passive
+perc_int = round((sum(tr_wd$movement_condition=='internal rotation')/numtrials)*100, 1) #percentage internal rotation
+perc_ext = round((sum(tr_wd$movement_condition=='external rotation')/numtrials)*100, 1) #percentage external rotation
+perc_flex = round((sum(tr_wd$movement_condition=='flexion')/numtrials)*100, 1) #percentage flexion
+perc_extens = round((sum(tr_wd$movement_condition=='extension')/numtrials)*100, 1) #percentage extension
+
+```
+
+## Experimental design
+This study concerned a two-level wrist-weight manipulation (no weight vs. weight), a two-level within-subject vocalization condition (expire vs. vocalize), and a five-level within-subject movement condition (‘no movement’, ‘extension’, ‘flexion’, ‘external rotation’, ‘internal rotation’). With 4 trial repetitions over the experiment, we yield 80 (2 weights x 2 vocalizations x 5 movements x 4 repetitions) trials per participant. Trials were blocked by weight condition and vocalization condition (so that weights and task did not switch from trial to trial). Within blocks all movement conditions were randomized.
+
+## Participants
+The current pre-registered confirmatory experiment was supported by a power analysis (see [preregistration](https://osf.io/jhdq4)). As planned, we collected *N* = (`r printnum(numpart)`) participants, with the following demographics and biometrics: `r printnum(part_fem, digits = 0)` female, `r printnum(part_male, digits = 0)` male, *M* (*SD*) age = `r printnum(m_age)` (`r printnum(sd_age)`), M (*SD*) body weight = `r printnum(m_weight)` kg (`r printnum(sd_weight)`), *M* (*SD*) body height = `r printnum(m_height)` cm (`r printnum(sd_height)`), *M* (*SD*) BMI = `r printnum(m_bmi)` (`r printnum(sd_bmi)`), *M* (*SD*) triceps skinfold = `r printnum(m_skin)` mm (`r printnum(sd_skin)`).  
+
+## Exclusions and deviations from pre-registration
+We also performed the experiment with one other participant, but due to an issue with LabStreamingLayer (LSL), this dataset could not be synchronized and was lost. Furthermore, due to running over time one participant had to terminate the study earlier about half way through. Note further, that in our pre-registration we wanted to admit participants with a BMI lower than 25, but since participants were difficult to recruit we accepted three participants with slightly higher BMIs too (max BMI of the current dataset: `r printnum(round(max(bmi),1))`). Participants were all able-bodied and did not have any constraints in performing the task. Finally, as stated in the pre-registration we will only, or primarily, report results on the vocalization trials (and not the expiration-only trials).
+  This means that for this report in total we have N = `r printnum(numpart)` participants, with 636 analyzable trials, with balanced conditions: weight = `r printnum(perc_w)`%,  no movement = `r printnum(perc_pas)`%, internal rotation = `r printnum(perc_int)` %, external rotation = `r printnum(perc_ext)`%, flexion = `r printnum(perc_flex)` %, extension = `r printnum(perc_extens)` %. 
+
+## Measurements and equipment
+
+###  Body measurements
+To enable future analyses of possible factors modulating individual-specific body properties, we collect some basic information about body properties. Namely, weight, under arm length, upper arm length, triceps skinfold, and upper arm circumference.
+
+### Experiment protocol
+The experiment was coded in Python using functions from PsychoPy. The experiment was controlled via a Brainvision Button Box (Brain Products GmbH, Munich, Germany), which was also streaming its output to the data collection PC unit.
+
+### Wrist weights
+To manipulate the mass set in motion during upper limb movement, participants wore a wrist weight in half of the trials. We used a TurnTuri sports wrist weight of 1 kg.
+
+### Video and kinematics
+The participants are recorded via a video camera (Logitech StreamCam), sampling at 60 frames per second. We used MediaPipe [@lugaresiMediaPipeFrameworkBuilding2019] to track the skeleton and facial movements, which is implemented in Masked-piper which we also use for masking the videos [@owoyeleMaskedpiperMaskingPersonal2022]. The motion-tracked skeleton, specifically the wrist of the dominant hand, is used to estimate movement initiation, peak speed, and the end of the movement. The motion tracking is, however, only used for determining movement windows and provides some descriptive information about kinematics, as kinetics is more of central concern here.
+
+### Muscle activity (Surface ElectroMyography: sEMG)
+We measured sEMG using a wired BrainAmp ExG system (Brain Products GmbH, Munich, Germany). Disposable surface electrodes (Kendall 24mm Arbo H124SG) were used, and for each of the four muscle targets we had 3 (active, reference, ground) electrodes (12 electrodes total). The sEMG system sampled at 2,500 Hz (for post-processing filters see below).   
+For an overview of the electrode attachments, see Fig. S\@ref(fig:overviewEMGmuscles). We prepare the skin surface for EMG application with a scrub gel (NuPrep) followed by cotton ball swipe with alcohol (Podior 70 %). Active and reference electrodes were attached with a 15mm distance center to center. 
+
+```{r overviewEMGmuscles, echo=FALSE, fig.cap =  "Overview sEMG target muscles. Active (a) and reference (r), and ground (g) sEMG electrodes, for each muscle target."}
+knitr::include_graphics(paste0(basefolder, '/after_edited_plots/emg_measurements_overview.png'))
+```
+<aside>
+<span style="color: red;"> This figure is reproduced in Figure 1, panel A, of the main report.
+</span>
+</aside>
+
+We attached electrodes for focal muscles which directly participate in the internal (pectoralis major) and external rotation (infraspinatus) of the humerus. Electrodes were applied for focal muscles ipsilaterally (relative to the dominant hand). We attached electrodes to the muscle belly of the clavicular head of the pectoralis major, with a ground electrode on the clavicle on the opposite side.  
+We also attached electrodes for postural muscles which will likely anticipate and react to postural perturbations due to upper limb movements. Since these muscles should act in the opposite direction of the postural perturbation of the dominant hand, we applied electrodes contralaterally to the dominant hand. We attach electrodes to the rectus abdominis, with a ground electrode on the iliac crest on the opposite side. We also attached electrodes to the erector spinae muscle group (specifically, the iliocostalis lumborum).
+
+### Ground reaction measurements
+We used an inhouse-built 1m² balance board with vertical pressure sensors. The sensors were derived and remodified from four Wii-Balance board sensors. The sampling rate was 400 Hz. The system was time-locked within millisecond accuracy, and has a spatial accuracy of several sub-millimeters. A national instruments card, USB-62221 performed the A/D conversion and was connected via USB to the PC.
+
+### Acoustics
+To ensure proper acoustic intensity measurements we used a headset microphone; MicroMic C520 (AKG, Inc.) headset condenser cardioid microphone sampling at 16 kHz. The gain levels of the condenser power source were set by the hardware (and could not be changed).
+
+Here are five audio examples from a male participant producing the sustained vocalization in different conditions without added weight.
+
+```{r, message = FALSE, warning = FALSE, echo = FALSE, code_folding = "Show code setting up the audio examples"}
+library(htmltools)
+
+audioexamples <- paste0(basefolder, "/AudioExamples/")
+
+audioexample_nomovement       <- paste0(audioexamples, "sample1_nomovement.wav")
+audioexample_internalrotation <- paste0(audioexamples, "sample2_internalrotation.wav")
+audioexample_flexion          <- paste0(audioexamples, "sample3_flexion.wav")
+audioexample_externalrotation <- paste0(audioexamples, "sample4_externalrotation.wav")
+audioexample_extension        <- paste0(audioexamples, "sample5_extension.wav")
+
+html_tag_audio <- function(file, type = c("wav")) {
+  type <- match.arg(type)
+  htmltools::tags$audio(
+    controls = NA,
+    htmltools::tags$source(
+      src = file,
+      type = glue::glue("audio/{type}", type = type)
+    )
+  )
+}
+```
+The first example is from the no movement condition:
+
+```{r audiexamplenomovement, message = FALSE, warning = FALSE, echo = FALSE}
+html_tag_audio(audioexample_nomovement, type = "wav")
+```
+
+The second example is from the internal rotation condition:
+
+```{r audiexampleinternalrotation, message = FALSE, warning = FALSE, echo = FALSE}
+html_tag_audio(audioexample_internalrotation, type = "wav")
+```
+
+The third example is from the external rotation condition:
+
+```{r audiexampleexternalrotation, message = FALSE, warning = FALSE, echo = FALSE}
+html_tag_audio(audioexample_externalrotation, type = "wav")
+```
+
+The fourth example is from the extension condition:
+
+```{r audiexampleextension, message = FALSE, warning = FALSE, echo = FALSE}
+html_tag_audio(audioexample_extension, type = "wav")
+```
+
+The fifth example is from the flexion condition:
+
+```{r audiexampleflexion, message = FALSE, warning = FALSE, echo = FALSE}
+html_tag_audio(audioexample_flexion, type = "wav")
+```
+
+
+### Recording setup and synchronization
+[LabStreamLayer](https://github.com/sccn/labstreaminglayer) (LSL) provided a uniform interface for streaming different signals along a network, where a common time stamp for each signal ensures sub-millisecond synchronization. We used a Linux system to record and stream the microphone recordings. Additionally a second PC collected video, and streamed ground reaction forces, and EMG. A data collection PC collected the audio, ground reaction force, and EMG streams and stored the output in XDF format for efficient storing of multiple time-varying signals. The video data was synchronized by streaming the frame number to the LSL recorder, allowing us to match up individual frames with the other signals (even when a frame is dropped).
+
+## Procedure
+Participants were admitted to the study based on exclusion criteria and signed an informed consent. We asked participants to take off their shoes and we proceeded with the body measurements, while instructing the participant about the nature of the study. After body measurements, we applied the surface EMG. We prepared the muscle site with rubbing gel and alcohol, and active/reference electrodes were placed with a distance of 15 mm from each others center. See Fig. S\@ref(fig:overviewEMGmuscles) for the sEMG electrode locations. The procedures up to the start of the experiment take about 20 minutes or less in total.
+
+Upon the start of the experiment participants took a standing position on the force platform. The experiment commenced with calibration and practice trials. First, 10 seconds of silent breathing without body movements were recorded. Then participants were asked to take a maximum inspiration followed by a maximum expiration, so as to measure signal conditions under respiratory boundary conditions. Then, for the practice trials, each movement was practiced with expiring and vocalization while performing the movement conditions, and the participant is introduced to wearing the wrist weight of 1 kg. After practice trials, participants performed 80 blocked trials.
+
+For each (practice) trial participants were closely guided by the information on the monitor. Firstly, participants were shown the movement to be performed for the trial, and were prompted by the experimenter to get ready to repeat the movement. No detailed instructions were given about how to move, other then showing the movements in animations, showing a person-masked skeleton performing the movement ((see stimuli example OSF)[https://osf.io/dnu4j/?view_only=2a1de243931946a6b1c602f4bcafd691]). Then participants were instructed to adopt the start position of the movement, which is a 90 degree elbow flexion, with either an externally rotated humerus (start position for internal rotation), or a non-rotated humerus with the wrist in front of the body (rest position for the other movement conditions). For the no movement condition, participants were asked to rest their arms alongside their body. Upon trial start, participants inhaled deeply with a timer counting down from 4 seconds. Then, participants vocalized or expired depending on condition assignment, with a screen appearing after 3 seconds to perform the movement. Visual guidance was provided to remind the participant of the end location, where a static images was shown of the movement end position. After an additional 4 seconds the trial ended. The 4 seconds allowed more than enough time to perform the movement and stabilize vocalization after the perturbation. In the no movement condition, a prompt was given to maintain one's posture with an image of the rest position (arms alongside the body).
+
+## Preprocessing of the data streams
+
+### EMG
+To reduce heart rate artifacts we apply a common method [@drakeEliminationElectrocardiogramContamination2006] of high-pass filtering the signal at 30 Hz using a zero-phase 4th order Butterworth filter. We then full-wave rectified the EMG signal and applied a zero-phase low-pass 4th order Butterworth filter at 20 Hz. When filtering any signal we pad the signals to avoid edge effects. We normalized the EMG signals within participants before submitting to analyses.
+
+```{r, EMGpreprocess, warning = FALSE, echo = TRUE, code_folding = "Show code preprocessing EMG data", message = FALSE}
+# load in the data and save it
+library(signal)
+library(ggrepel)
+
+#####################preprocessing functions
+butter.it <- function(x, samplingrate, order, cutoff, type = "low")
+{
+  nyquist <- samplingrate/2
+  xpad <- c(rep(0, 1000), x, rep(0,1000)) #add some padding
+  bf <- butter(order,cutoff/nyquist, type=type) 
+  xpad <- as.numeric(signal::filtfilt(bf, xpad))
+  x <- xpad[1000:(1000+length(x)-1)] #remove the padding
+}
+
+#rectify and high and low pass EMG signals
+reclow.it <- function(emgsignal, samplingrate, cutoffhigh, cutofflow)
+  {
+    #high pass filter
+    output <- butter.it(emgsignal, samplingrate=samplingrate, order=4, cutoff = cutoffhigh,
+                        type = "high")
+    #rectify and low pass
+    output <<- butter.it(abs(output), samplingrate=samplingrate,  order=4, cutoff= cutofflow,
+                        type = "low")
+}
+###########################################
+
+####################################LOAD IN EMG DATA
+EMGdata <- list.files(rawd, pattern = '*Dev_1.csv')
+####################################SET common colors for muscles
+col_pectoralis    <- '#e7298a'
+col_infraspinatus <- '#7570b3' 
+col_rectus        <- '#d95f02'
+col_erector       <- '#1b9e77'
+colors_mus <- c("pectoralis major" = col_pectoralis, "infraspinatus" = col_infraspinatus, "rectus abdominis" = col_rectus, "erector spinae" = col_erector)
+
+#show an example
+emgd <- read.csv(paste0(rawd, EMGdata[822]))
+colnames(emgd) <- c('time_s', 'infraspinatus', 'rectus_abdominis', 'pectoralis_major', 'erector_spinae', 'empty1', 'empty2', 'empty3', 'empty4', 'respiration_belt', 'button_box')
+samplingrate <- 1/mean(diff(emgd$time_s))
+nyquistemg <- samplingrate/2
+
+#example without strong high pass filter
+emgd$time_s <- emgd$time_s-min(emgd$time_s)
+emgd$pectoralis_major_sm <- reclow.it(emgd$pectoralis_major, samplingrate= samplingrate, cutoffhigh = 2, cutofflow = 20)
+emgd$infraspinatus_sm <- reclow.it(emgd$infraspinatus, samplingrate= samplingrate, cutoffhigh = 2, cutofflow = 20)
+emgd$erector_spinae_sm <- reclow.it(emgd$erector_spinae, samplingrate= samplingrate, cutoffhigh = 2, cutofflow = 20)
+emgd$rectus_abdominis_sm <- reclow.it(emgd$rectus_abdominis, samplingrate= samplingrate, cutoffhigh = 2, cutofflow = 20)
+
+#example trial
+unfilteredEMG <- ggplot(emgd[seq(1, nrow(emgd),by=5),], aes(x=time_s))+geom_path(aes(y=infraspinatus_sm, color = 'infraspinatus'))+
+  geom_path(aes(y=pectoralis_major_sm, color = 'pectoralis major'))+
+  geom_path(aes(y=rectus_abdominis_sm, color = 'rectus abdominis'))+
+  geom_path(aes(y=erector_spinae_sm, color = 'erector spinae'))+ 
+  geom_text(aes(x = 0.5, y = 600), color = "black", label = "Heart rate peak 1", angle=45, size = 2) +
+  geom_text(aes(x = 1.4, y = 600), color = "black", label = "Heart rate peak 2", angle=45, size = 2) +
+  geom_text(aes(x = 4.4, y = 600), color = "black", label = "Heart rate peak 5", angle=45, size = 2) +
+  scale_color_manual(values = colors_mus)
+unfilteredEMG <- unfilteredEMG +
+  labs(x = "time in seconds", y = "EMG rectified") +
+  xlab('time in seconds') +
+  ylab('EMG rectified') +
+  ylim(0, 800) +
+  theme_cowplot(12) +
+  theme(legend.position="none")
+
+
+#example without strong high pass filter
+emgd$pectoralis_major_sm_h <- reclow.it(emgd$pectoralis_major, samplingrate= samplingrate, cutoffhigh = 30, cutofflow = 20) 
+emgd$infraspinatus_sm_h  <- reclow.it(emgd$infraspinatus, samplingrate= samplingrate, cutoffhigh = 30, cutofflow = 20)
+emgd$erector_spinae_sm_h  <- reclow.it(emgd$erector_spinae, samplingrate= samplingrate, cutoffhigh = 30, cutofflow = 20)
+emgd$rectus_abdominis_sm_h  <- reclow.it(emgd$rectus_abdominis, samplingrate= samplingrate, cutoffhigh = 30, cutofflow = 20)
+
+#example trial
+filteredEMG <- ggplot(emgd[seq(1, nrow(emgd),by=5),], aes(x=time_s)) +
+  geom_path(aes(y=infraspinatus_sm_h, color = 'infraspinatus')) +
+  geom_path(aes(y=pectoralis_major_sm_h, color = 'pectoralis major')) +
+  geom_path(aes(y=rectus_abdominis_sm_h, color = 'rectus abdominis')) +
+  geom_path(aes(y=erector_spinae_sm_h, color = 'erector spinae')) +
+  scale_color_manual(values = colors_mus)
+filteredEMG <- filteredEMG +
+  labs(x = "time in seconds", y = "EMG rectified", color = "Legend") +
+  xlab('time in seconds') +
+  ylab('EMG rectified') +
+  theme_cowplot(12)+
+  theme(
+    legend.position = c(1, 1),
+    legend.justification = c("right", "top"),
+    legend.box.just = "right",
+    legend.margin = margin(4, 4, 4, 4)
+    )
+```
+
+
+```{r EMGsmoothing, echo=FALSE, fig.cap = "Example of smoothing settings for EMG signals. The upper panel shows the raw rectified high-pass filtered EMG, and the lower panel shows the low-pass filtered data to reduce artifacts of heart rate. This example shows an internal rotation trial, where we successfully retrieve the peak in pectoralis major that internally rotates the arm."}
+grid.arrange(unfilteredEMG, filteredEMG, nrow= 2)
+```
+<aside>
+<span style="color: red;"> This refers to Figure S2 in the supplemental information.
+</span>
+</aside>
+
+### Ground reaction forces
+We upsampled the balanceboard from 400 Hz to 2,500 Hz. We then applied a zero-phase low-pass 2nd order Butterworth filter at 20 Hz to the padded signals. Thes signals were used to calculate the key measure for postural perturbation we computed the change in 2D magnitude (L2 norm for x and y, and combined) in center of pressure. We refer to this as the change in the center of pressure (COPc), or the anterior-posterior COPc (front-back sway), or the medial-lateral COPc (left-right sway).
+
+### Acoustics
+For acoustics we extracted the smoothed amplitude envelope (hereafter envelope). For the envelope we applied a Hilbert transform to the waveform signal, then taking the complex modulus to create a 1D time series, which was then resampled at 2,500 Hz, and smoothed with a Hann filter based on a Hanning Window of 12 Hz. We normalize the amplitude envelope signals within participants before submitting to analyses.
+
+```{r, message = FALSE, warning = FALSE, echo = TRUE, code_folding = "Show code extracting acoustics"}
+library(rPraat) #for reading in sounds
+library(dplR)   #for applying Hanning
+library(seewave) #for signal processing general
+library(wrassp) #for acoustic processing
+
+##################### MAIN FUNCTION TO EXTRACT SMOOTHED ENVELOPE ###############################
+amplitude_envelope.extract <- function(locationsound, smoothingHz, resampledHz)
+{
+  #read the sound file into R
+  snd <- rPraat::snd.read(locationsound)
+  #apply the hilbert on the signal
+  hilb <- seewave::hilbert(snd$sig, f = snd$fs, fftw =FALSE)
+  #apply complex modulus
+  env <- as.vector(abs(hilb))
+  #smooth with a hanning window
+  env_smoothed <- dplR::hanning(x= env, n = snd$fs/smoothingHz)
+  #set undeterminable at beginning and end NA's to 0
+  env_smoothed[is.na(env_smoothed)] <- 0
+  #resample settings at desired sampling rate
+  f <- approxfun(1:(snd$duration*snd$fs),env_smoothed)
+  #resample apply
+  downsampled <- f(seq(from=0,to=snd$duration*snd$fs,by=snd$fs/resampledHz))
+  #let function return the downsampled smoothed amplitude envelope
+  return(downsampled[!is.na(downsampled)])
+}
+```
+
+### Data aggregation
+All signals were sampled at, or upsampled to, 2,500 Hz. Then we aggregated the data by aligning time series in a combined by-trial format to increase ease of combined analyses. We linearly interpolated signals when sample times did not align perfectly.
+
+```{r, echo = TRUE, cache=FALSE, warning = FALSE, message = FALSE, results = FALSE, code_folding = "Show code aggregating the data"}
+library(pracma)
+library(zoo)
+
+overwrite = FALSE
+
+#lets loop through the triallist and extract the files
+triallist$uniquetrial <- paste0(triallist$trialindex, '_', triallist$ppn) 
+  #remove duplicates so that we ignore repeated trials
+howmany_repeated <- sum(duplicated(triallist$uniquetrial))
+triallist <- triallist[!duplicated(triallist$uniquetrial),]
+
+
+for(ID in triallist$uniquetrial)
+{
+  #print(paste0('working on ', ID))
+  #debugging
+  
+  triallist_s <- triallist[triallist$uniquetrial==ID,]
+  ##load in row triallist
+  pp <- triallist_s$ppn
+  pps <- triallist_s$ppn
+  if((pp == '41') | (pp == '42')){pps <- '4'}
+  gender <- mtlist$sex[mtlist$ppn==pps]
+  hand   <- mtlist$handedness[mtlist$ppn==pps]
+  triali <- triallist_s$trialindex
+  
+  if(!file.exists(paste0(procd, 'pp_', pp, '_trial_', triali, '_aligned.csv')) | overwrite == TRUE)
+  {
+  ######load in EMG and resp belt
+    EMGr <- read.csv(paste0(rawd, 'p', pp, '_trial_',triali, '_BrainAmpSeries-Dev_1.csv'))
+    channels <- c('time_s', 'infraspinatus', 'rectus_abdominis', 'pectoralis_major', 'erector_spinae', 'empty1', 'empty2', 'empty3', 'empty4', 'respiration_belt', 'button_box')
+    colnames(EMGr) <- channels
+    #only keep the relevant vectors
+    EMGr <- cbind.data.frame(EMGr$time_s, EMGr$respiration_belt, EMGr$infraspinatus,
+                             EMGr$rectus_abdominis,EMGr$pectoralis_major, EMGr$erector_spinae)
+    colnames(EMGr) <- channels[c(1, 10, 2, 3, 4, 5)] #rename
+    EMGsamp <- 1/base::mean(diff(EMGr$time_s-min(EMGr$time_s)))
+    #smooth
+      #note the respiration belt is not installed now, but if we resolve technical issues we might add it
+    EMGr$respiration_belt <- butter.it(EMGr$respiration_belt, samplingrate = EMGsamp, order = 2, cutoff = 30)
+      #smooth EMG with described settings
+    EMGr[,3:6] <- apply(EMGr[,3:6], 2, function(x) reclow.it(scale(x, scale = FALSE, center =TRUE), samplingrate= EMGsamp, cutoffhigh = 30, cutofflow = 20)) #CHANGECONF we center before we smooth now
+  #########load in acoustics
+  locsound <- paste0(rawd, 'p', pp, '_trial_',triali, '_Micdenoised.wav')
+  if(!file.exists(locsound)){print(paste0('this mic file does not exist: ', locsound))}
+  if(file.exists(locsound)){
+    
+  env <- amplitude_envelope.extract(locationsound=locsound, smoothingHz =  12, resampledHz = 2500)
+  acoustics <- cbind.data.frame(env)
+  acoustics$f0 <- NA
+  acoustics$time_s <- seq(0, (nrow(acoustics)-1)*1/2500, 1/2500)
+  duration_time <- (max(acoustics$time_s)-min(acoustics$time_s)) #note down duration time of this trial
+  #########load in motion
+  mt <- read.csv(paste0(rawd, 'p', pp, '_trial_',triali, '_video_raw_body.csv'))
+  if(hand == 'r'){mov <- cbind.data.frame(mt$X_RIGHT_WRIST, mt$Y_RIGHT_WRIST, mt$Z_RIGHT_WRIST)}  #CHANGECONF change we also take depth
+  if(hand == 'l'){mov <- cbind.data.frame(mt$X_LEFT_WRIST, mt$Y_LEFT_WRIST, mt$Z_RIGHT_WRIST)}    #CHANGECONF we also take depth
+  colnames(mov) <- c('x_wrist', 'y_wrist', 'z_wrist')
+  mov$y_wrist <- mov$y_wrist*-1 #flip axes so that higher up means higher values (check)
+  #filter movements
+  mov[,1:3] <- apply(mov[,1:3], 2, FUN=function(x) butter.it(x, order=4, samplingrate = 60, cutoff = 10, type='low'))
+  
+  #########load in balanceboard
+  bb <- read.csv(paste0(rawd, 'p', pp, '_trial_',triali, '_BalanceBoard_stream.csv'))
+  colnames(bb) <- c('time_s', 'left_back', 'right_forward', 'right_back', 'left_forward')
+  bbsamp <- 1/mean(diff(bb$time_s - min(bb$time_s)))
+  bb[,2:5] <- apply(bb[,2:5], 2, function(x) sgolayfilt(x, 5, 51))
+  COPX  <- (bb$right_forward+bb$right_back)-(bb$left_forward+bb$left_back)
+  COPY  <- (bb$right_forward+bb$left_forward)-(bb$right_back+bb$left_back) # R1
+  bb$COPXc <- sgolayfilt(c(0, diff(COPX)), 5, 51)
+  bb$COPYc <-  sgolayfilt(c(0, diff(COPY)), 5, 51)
+  bb$COPc <- sqrt(bb$COPXc^2 + bb$COPYc^2)
+  #########combine everything
+    #combined acoustics and EMG(+resp)
+  EMGr$time_ss <- EMGr$time_s-min(EMGr$time_s)
+  ac_emg <- merge(acoustics, EMGr, by.x = 'time_s', by.y = 'time_ss', all = TRUE)
+  ac_emg[,4:9] <- apply(ac_emg[,4:9], 2, function(y) na.approx(y, x=ac_emg$time_s, na.rm = FALSE))
+  ac_emg <- ac_emg[!is.na(ac_emg$env),]
+  ac_emg$time_s <- ac_emg$time_s + min(ac_emg[,4],na.rm=TRUE) #get the original time
+  ac_emg <- ac_emg[!is.na(ac_emg$time_s),-4] #remove the centered time variable, and remove time NA at the end
+    #now add balance board
+  ac_emg_bb <- merge(ac_emg, bb[,c(1, 6:8)], by.x='time_s', by.y='time_s', all= TRUE)
+  ac_emg_bb[,9:11] <- apply(ac_emg_bb[,9:11], 2, function(y) na.approx(y, x=ac_emg_bb$time_s, na.rm = FALSE))
+  ac_emg_bb <- ac_emg_bb[!is.na(ac_emg_bb$env), ]
+  ac_emg_bb <- ac_emg_bb[!is.na(ac_emg_bb$time_s),-4]
+    #now add the final motion (which is thereby upsampled to 2500 hertz)
+  start_time <- min(ac_emg_bb$time_s,na.rm=TRUE)
+  mov$time_s <-   start_time+seq(0, duration_time-(duration_time /nrow(mov)), by= duration_time /nrow(mov))
+  ac_emg_bb_m <- merge(ac_emg_bb, mov, by.x='time_s', by.y='time_s', all = TRUE)
+  ac_emg_bb_m[,11:13] <- apply(ac_emg_bb_m[,11:13], 2, function(y) na.approx(y, x=ac_emg_bb_m$time_s, na.rm = FALSE))
+  ac_emg_bb_m <- ac_emg_bb_m[!is.na(ac_emg_bb_m$env), ]
+  #now write the files away to a processed folder
+  write.csv(ac_emg_bb_m, paste0(procd, 'pp_', pp, '_trial_', triali, '_aligned.csv'))
+    }
+  }
+}
+```
+
+### Data sharing & privacy
+ Video data is deidentified using the masked-piper tool to mask faces and body while maintaining kinematic information [@owoyeleMaskedpiperMaskingPersonal2022].
+
+## Overview data analyses
+Note that there is a general decline in the amplitude of the vocalization during a trial (see Fig. S\@ref(fig:combinedtimeseries), top panel). This is to be expected, as the subglottal pressure falls when the lungs deflate. To quantify deviations from stable vocalizations, we therefore detrended the amplitude envelope time series, so as to assess positive or negative peaks relative to this trend line. For the envelope, muscle activity, and the change in center of pressure, we will measure the global maxima happening within the analyses window (i.e., within a trial we take a local maximum occurring between movement onset and offset). We analyzed positive and negative peaks within the movement window separately.
+
+```{r normalization_EMG, cache = FALSE, ECHO = TRUE, code_folding = "Show code scaling data within participant"}
+#We have to do some within participant scaling, such that
+  #all EMG's are rescaled within participants
+fs <-  list.files(procd)
+fs <- fs[!fs%in%list.files(procd, pattern = 'zscal_*')]
+
+#set to true if you want to overwrite files (to check [modified] code)
+overwrite = FALSE
+
+
+if((length(list.files(procd, pattern = 'zscal_*')) == 0) | (overwrite==TRUE))
+{
+  mr <- data.frame()
+  for(f in fs)
+  {
+    temp <- read.csv(paste0(procd, f))
+    temp$pp <- parse_number(f)
+    temp$tr <- f
+    mr <- rbind.data.frame(mr, temp)
+  }
+  
+  #set ppn to 4
+  temp$pp[temp$pp==41 | temp$pp==42] <- 4
+  
+  #center the muscle measurements for each trial (due to drift)
+  mr$infraspinatus <- ave(mr$infraspinatus, mr$tr, FUN = function(x){x<-x-mean(x, na.rm=TRUE)})       
+  mr$rectus_abdominis <- ave(mr$rectus_abdominis, mr$tr, FUN = function(x){x<-x-mean(x, na.rm=TRUE)}) 
+  mr$pectoralis_major <- ave(mr$pectoralis_major, mr$tr, FUN = function(x){x<-x-mean(x, na.rm=TRUE)}) 
+  mr$erector_spinae <- ave(mr$erector_spinae, mr$tr, FUN = function(x){x<-x-mean(x, na.rm=TRUE)})     
+
+  #normalize signals by participant
+  mr$infraspinatus <- ave(mr$infraspinatus, mr$pp, FUN = function(x)scale(x, center = FALSE))       
+  mr$rectus_abdominis <- ave(mr$rectus_abdominis, mr$pp, FUN = function(x)scale(x, center = FALSE)) 
+  mr$pectoralis_major <- ave(mr$pectoralis_major, mr$pp, FUN = function(x)scale(x, center = FALSE)) 
+  mr$erector_spinae <- ave(mr$erector_spinae, mr$pp, FUN = function(x)scale(x, center = FALSE))     
+  mr$env_z <- ave(mr$env, mr$pp, FUN = function(x)scale(x, center = FALSE))
+  
+  #save the scaled variables in new objects
+  for(f in unique(mr$tr))
+  {
+    sb <- mr[mr$tr==f, ] #subset
+    #center motion per trial
+    sb$x_wrist <- sb$x_wrist-mean(sb$x_wrist,na.rm=TRUE)
+    sb$y_wrist <- sb$y_wrist-mean(sb$y_wrist,na.rm=TRUE)
+    sp <- c(0, sqrt(diff(sb$x_wrist)^2+diff(sb$y_wrist)^2))
+    sp[is.na(sp)] <- 0 #there are some trailing NA's which we fill with 0 
+    sb$speed <- butter.it(sp, samplingrate = 2500, order = 4, cutoff = 5)
+    sb$time_s   <- sb$time_s #this is the time
+    sb$time_s_c <- sb$time_s-min(sb$time_s)# accumulating at trial start (resyncing) resynced with the psychopy software
+    write.csv(sb, paste0(procd, 'zscal_', f))
+  }
+}
+```
+
+```{r, warning = FALSE, echo = TRUE, code_folding = "Show code producing the plot", message = FALSE}
+ptest=8
+ex2 <- triallist[triallist$vocal_condition=='vocalize' & triallist$movement_condition=='internal_rotation_stop'& triallist$ppn ==ptest, ]
+ex2 <- ex2[1, ]
+#ex2$trialindex
+exts2 <- read.csv(paste0(procd, 'zscal_pp_', ex2$ppn, '_trial_', ex2$trialindex, '_aligned.csv'))
+#exts2 <- dplyr::rename(exts2, rectus_abdominis = rectus_abdominus)
+  exts2 <- subset(exts2, time_s_c > 1 & time_s_c <5)
+  exts2 <- exts2[seq(1, nrow(exts2), by = 5), ]    #downsample by a 5th
+  exts2$time_ms <- round(exts2$time_s_c*1000)
+  fp <- pracma::findpeaks(exts2$speed)
+  fp <- fp[which.max(fp[,1]),]
+  startmov <- exts2$time_ms[fp[3]]
+  endmov   <- exts2$time_ms[fp[4]]
+  ps       <- exts2$time_ms[fp[2]]
+#apply movement rule to centralize trials
+#here all processing steps are performed, and data aligned
+exampleenvelope <- ggplot(exts2, aes(x=time_ms)) +
+  geom_path(aes(y=env), size =1) +
+  theme_cowplot(12) + 
+  ggtitle('Example trial internal rotation') +
+  ylab('norm. env') +
+  geom_vline(xintercept=startmov, color = 'red', size= 2, alpha=.3) +
+  geom_vline(xintercept=endmov, color = 'red', size= 2, alpha=.3) +
+  geom_vline(xintercept=startmov-500, color = 'black', size= 2, alpha=.3) +
+  geom_smooth(aes(y=env), method='lm', linetype = 'dashed',color = 'black') +
+  geom_vline(xintercept=ps, color = 'black', size= 2, alpha=.3) +
+  geom_vline(xintercept= 3000) +
+  xlim(1000, 5000) +
+  xlab('time (ms)')
+
+examplemovement <- ggplot(exts2, aes(x=time_ms)) +
+  geom_path(aes(y=round(speed*2500*100)), color = 'black') +
+  theme_cowplot(12) +
+  geom_vline(xintercept=startmov, color = 'red', size= 2, alpha=.3) +
+  geom_vline(xintercept=endmov, color = 'red', size= 2, alpha=.3) +
+  geom_vline(xintercept=startmov-500, color = 'black', size= 2, alpha=.3) +
+  geom_vline(xintercept=ps, color = 'black', size= 2, alpha=.3) +
+  ylab("cm per second") +
+  geom_vline(xintercept=3000, color = 'black', size= 1) +
+  geom_vline(xintercept= 3000) +
+  xlim(1000, 5000)+xlab('time (ms)')
+
+exampleCOP <- ggplot(exts2, aes(x=time_ms)) +
+  geom_path(aes(y=COPc)) +
+  theme_cowplot(12) +
+  geom_vline(xintercept=startmov, color = 'red', size= 2, alpha=.3) +
+  geom_vline(xintercept=endmov, color = 'red', size= 2, alpha=.3) +
+  geom_vline(xintercept=startmov-500, color = 'black', size= 2, alpha=.3) +
+  geom_vline(xintercept=ps, color = 'black', size= 2, alpha=.3) +
+  geom_vline(xintercept= 3000) +xlim(1000, 5000) +
+  xlab('time (ms)')
+
+exampleEMG <- ggplot(exts2, aes(x=time_ms)) +
+  geom_path(aes(y=infraspinatus, color = 'infraspinatus')) +
+  geom_path(aes(y=pectoralis_major, color = 'pectoralis major')) +
+  geom_path(aes(y=rectus_abdominis, color = 'rectus abdominis')) +
+  geom_path(aes(y=erector_spinae, color = 'erector spinae')) +
+  geom_vline(xintercept=startmov, color = 'red', size= 2, alpha=.3) +
+  geom_vline(xintercept=endmov, color = 'red', size= 2, alpha=.3) +
+  geom_vline(xintercept=startmov-500, color = 'black', size= 2, alpha=.3) +
+  geom_vline(xintercept=ps, color = 'black', size= 2, alpha=.3) +
+  scale_color_manual(values = colors_mus) +
+  labs(y="sEMG") +
+  theme_cowplot(12) +
+  theme(legend.position = c(0.8, 0.6)) +
+  geom_vline(xintercept= 3000) +
+  xlim(1000, 5000) +
+  xlab('time (ms)')
+```
+
+```{r combinedtimeseries, echo=FALSE, message = FALSE, fig.cap = "Combined time series. One example trial and the associated signals are shown, for the internal rotation movement condition. At time = 0 s, the prompt is given to the participant to vocalize. We determine a detrending line using linear regression for the 1 to 5 s after the vocalization prompt. Note, at 3 s (3000 ms), there is a movement prompt. However, we determine our window where we assess peaks in signals at 500 ms before and after the movement onset/offset (using peakfinding function on the 2D speed time series of the wrist). In these trials, the analysis window is given in gray dashed bars, which is 500 ms after and before movement onset/offset.", fig.height = 12}
+plot_grid(exampleenvelope, examplemovement, exampleCOP, exampleEMG, ncol = 1, align = 'v', axis = 'l')
+```
+<aside>
+<span style="color: red;">
+This refers to Figure 1, panel C, of the main report.
+</span>
+</aside>
+
+```{r, cache = FALSE, echo = TRUE, warning = FALSE, message = FALSE, code_folding = "Show code setting up the data frame"}
+overwrite = FALSE
+
+if(overwrite)
+{
+tr_wd <- triallist
+tr_wd$min_amp_c_around_move <- NA
+tr_wd$min_amp_time_around_move <- NA
+tr_wd$max_amp_c_around_move <- NA
+tr_wd$max_amp_time_around_move  <- NA
+tr_wd$max_pectoral <- NA
+tr_wd$max_infra<- NA
+tr_wd$max_rectus<- NA
+tr_wd$max_erector<- NA
+tr_wd$max_COPxc <- NA
+tr_wd$max_COPyc <- NA
+tr_wd$max_COPc  <- NA
+
+#lets loop through the triallist and extract the files
+tr_wd$uniquetrial <- paste0(tr_wd$trialindex, '_', triallist$ppn) 
+  #remove duplicates so that we ignore repeated trials #NOTE in total we registered 25 repeats
+howmany_repeated <- sum(duplicated(tr_wd$uniquetrial))
+tr_wd <- tr_wd[!duplicated(tr_wd$uniquetrial),]
+
+#make one large dataset
+tsl <- data.frame()
+
+for(ID in tr_wd$uniquetrial)
+{
+   #debugging
+  #ID <- tr_wd$uniquetrial[27]
+  tr_wd_s <- tr_wd[tr_wd$uniquetrial==ID,]
+  
+  ##load in row tr_wd
+  pp <- tr_wd_s$ppn
+  gender <- mtlist$sex[mtlist$ppn==pp]
+  hand   <- mtlist$handedness[mtlist$ppn==pp]
+  triali <- tr_wd_s$trialindex
+  if(file.exists(paste0(procd, 'zscal_pp_', pp, '_trial_', triali, '_aligned.csv')))
+  {
+  ts <- read.csv(paste0(procd, 'zscal_pp_', pp, '_trial_', triali, '_aligned.csv'))
+  ts$time_ms <- round(ts$time_s*1000)
+  ts$time_ms <- ts$time_ms-min(ts$time_ms)
+                                              #take the first 1 to 5 seconds
+  ts <- ts[(ts$time_ms>1000) & (ts$time_ms < 5000), ]
+  ts$env_z <- pracma::detrend(ts$env_z, tt = 'linear') # detrend the envelope
+
+  #movement onset + - 500 milliseconds
+  fp <- pracma::findpeaks(ts$speed)
+  fp <- fp[which.max(fp[,1]),]
+  startmov <- ts$time_ms[fp[3]]-500
+  endmov   <- ts$time_ms[fp[4]]+500
+  ts$movstart <- ts$time_ms-ts$time_ms[fp[3]] #get the time when the movement starts (which is the beginning of the rise to peak speed)
+  
+  subts <- ts[(ts$time_ms>startmov) & (ts$time_ms<endmov),] #subset
+  subts$peaks <- NA
+  indexspeed <- which(subts$time_ms==ts$time_ms[fp[2]])[1] #there are might be multiple adjacent values that have the peak speed
+  subts$peaks[indexspeed] <- 'peak speed'
+  indexend <- which(subts$time_ms==ts$time_ms[fp[4]])[1] #there are might be multiple adjacent values that have the peak speed
+  subts$peaks[indexend] <- 'movement end'
+  subts$movement_condition <- tr_wd_s$movement_condition
+  subts$vocal_condition <- tr_wd_s$vocal_condition
+  subts$weight_condition <- tr_wd_s$weight_condition
+  subts$trial_number <-  tr_wd_s$trialindex
+  
+  #bind into big dataset
+  tsl <- rbind(tsl, subts)
+
+  #peakspeed
+  tp <- subts$time_ms[which(subts$peaks=='peak speed')] #take everything before the peak speed so that we get movement onset
+  
+  #get the subts
+  tr_wd$max_amp_c_around_move[tr_wd$uniquetrial==ID] <- max(subts$env_z[subts$time_ms<tp], na.rm=TRUE) #before the peak speed
+  tr_wd$min_amp_c_around_move[tr_wd$uniquetrial==ID] <- min(subts$env_z[subts$time_ms<tp], na.rm=TRUE) #before the peak speed
+  # also collect the times of the peaks
+  envcc <- subts$env_z[subts$time_ms<tp]
+  timecc <- subts$time_ms[subts$time_ms<tp]
+  tr_wd$max_amp_time_around_move[tr_wd$uniquetrial==ID] <- timecc[which.max(envcc)]-tp # time pos peak
+  tr_wd$min_amp_time_around_move[tr_wd$uniquetrial==ID] <- timecc[which.min(envcc)]-tp #time negative peak relative to peak speed
+  
+  # also get the value of the peak in speed
+  tr_wd$peak_speed[tr_wd$uniquetrial==ID] <- max(subts$speed, na.rm = TRUE)
+  tr_wd$peak_acc[tr_wd$uniquetrial==ID] <- max(diff(subts$speed), na.rm = TRUE)
+
+  # collect the peaks
+  tr_wd$max_pectoral[tr_wd$uniquetrial==ID] <- max(subts$pectoralis_major[subts$time_ms<tp], na.rm=TRUE) #before the peak speed
+  tr_wd$max_infra[tr_wd$uniquetrial==ID] <- max(subts$infraspinatus[subts$time_ms<tp], na.rm=TRUE) #before the peak speed
+  tr_wd$max_rectus[tr_wd$uniquetrial==ID] <- max(subts$rectus_abdominis[subts$time_ms<tp], na.rm=TRUE) #before the peak speed
+  tr_wd$max_erector[tr_wd$uniquetrial==ID] <- max(subts$erector_spinae[subts$time_ms<tp], na.rm=TRUE)#before the peak speed
+  tr_wd$max_COPxc[tr_wd$uniquetrial==ID] <- max(subts$COPXc[subts$time_ms<tp], na.rm=TRUE)#before the peak speed
+  tr_wd$max_COPyc[tr_wd$uniquetrial==ID] <- max(subts$COPYc[subts$time_ms<tp], na.rm=TRUE)#before the peak speed
+  tr_wd$max_COPc[tr_wd$uniquetrial==ID] <- max(subts$COPc[subts$time_ms<tp], na.rm=TRUE)#before the peak speed
+  
+  }
+}
+
+#order levels
+tr_wd$movement_condition <- recode(tr_wd$movement_condition, no_movement  = "no movement",
+                                           extension_stop = "extension",flexion_stop  = "flexion",
+                                           external_rotation_stop = "external rotation",
+                                           internal_rotation_stop = "internal rotation")
+tr_wd$movement_condition <- factor(tr_wd$movement_condition, 
+                                   levels = c("no movement", "extension", "flexion", 
+                                              "external rotation", "internal rotation"))
+#maybe write to file?
+write.csv(tr_wd, paste0(procdtot, 'fulldata.csv'))
+write.csv(tsl, paste0(procdtot, 'time_series_all.csv'))
+}
+#read this in
+if(!overwrite)
+{
+  tr_wd <- read.csv(paste0(procdtot, 'fulldata.csv'))
+  tsl   <- read.csv(paste0(procdtot, 'time_series_all.csv'))
+}
+
+
+#order levels
+tr_wd$movement_condition <- recode(tr_wd$movement_condition, no_movement  = "no movement",
+                                           extension_stop = "extension",flexion_stop  = "flexion",
+                                           external_rotation_stop = "external rotation",
+                                           internal_rotation_stop = "internal rotation")
+tr_wd$movement_condition <- factor(tr_wd$movement_condition, 
+                                   levels = c("no movement", "extension", "flexion", 
+                                              "external rotation", "internal rotation"))
+
+tr_wd$ppn <- ifelse(tr_wd$ppn%in%c(41, 42), 4, tr_wd$ppn)
+
+#tsl <- dplyr::rename(tsl, rectus_abdominis = rectus_abdominus)
+```
+
+# Supporting results
+
+## Descriptive results and statistical manipulation checking
+Before moving to our main pre-registered hypothesis testing, we first provide an overview of the data and statistical manipulation checks. This includes the timing of the movements, the magnitude of the muscle, postural, and kinematic peaks per movement and weight condition, as well as the effect of vocal condition on the magnitude of those peaks.
+
+### Muscle, postural, and kinematic changes for different movement and weight conditions
+
+Fig. S\@ref(fig:movementpeakmuscleactivityplot) shows an overview of the muscle activity patterns for each movement condition, split over weight conditions. Table S\@ref(tab:manipchecktableS1) provides the numerical information. All in all, these descriptive results pattern in sensible ways. There is generally more (postural) muscle, postural, and kinematic activity in movement conditions. Focal muscles powering internal (pectoralis major) or external (infraspinatus) rotation are peaking in activity during these movement conditions. Especially for flexion and extension (rather than internal/external rotation) we obtain anterior-posterior change in the center of pressure. Generally, there is a higher muscle, postural activity when wearing weights, while weights generally reduces peak speed and acceleration. Below we go into more details, for the statistical confirmation of these findings.
+
+```{r movementpeakmuscleactivity, code_folding = "Show plotting code"}
+library(magick)
+# R1 added detailed info
+##### This the raw code for the plot
+    #we have however, done after editing to prettify and mark the plot
+sub <- tr_wd[ tr_wd$trialindex>9 & tr_wd$vocal_condition=="vocalize" , ] #only real trials
+
+sub$max_pectoral <- scale(sub$max_pectoral, center = FALSE)[,1]
+sub$max_infra    <- scale(sub$max_infra, center = FALSE )[,1]
+sub$max_rectus   <- scale(sub$max_rectus, center = FALSE)[,1]
+sub$max_erector  <- scale(sub$max_erector, center = FALSE)[,1]
+sub$max_COPc     <- scale(sub$max_COPc, center = FALSE)[,1]
+sub$max_COPxc    <- scale(sub$max_COPxc, center = FALSE)[,1]
+sub$max_COPyc    <- scale(sub$max_COPyc, center = FALSE)[,1] 
+sub$peak_speed   <- scale(sub$peak_speed, center = FALSE)[,1]
+sub$peak_acc     <- scale(sub$peak_acc, center = FALSE)[,1]
+
+# reorder movement condition reversing the order
+sub$movement_condition <- factor(sub$movement_condition, levels = rev(levels(sub$movement_condition)))
+
+#reorder values
+peaks_pectoralis_bymovement <- ggplot(sub, aes(x = movement_condition, y=max_pectoral,group=interaction(weight_condition, movement_condition))) +
+  geom_quasirandom(aes(color = weight_condition, shape = weight_condition),alpha = 0.4, dodge.width = 0.8, cex = 1) +
+  geom_boxplot(aes(size= weight_condition),alpha = 0) +
+  theme_cowplot(12) +
+  theme(axis.text.x = element_text(angle = 0, size = 7)) +
+  xlab("movement condition") +
+  ggtitle('Pectoralis major (internal rotator)') +
+  ylab('max sEMG activity \n (normalized)') +
+  theme(plot.title = element_text(hjust = 0.5, size = 10, color = col_pectoralis)) +
+  scale_colour_brewer(palette = 'Set1') +
+  theme(legend.title=element_blank()) +
+  theme(legend.position = c(0.8, 0.8), legend.key.size = unit(.2, 'cm')) +
+  ylim(-0.1, 5) +
+  geom_hline(yintercept=median(sub$max_pectoral[sub$movement_condition == 'no movement']), linetype='dashed') +
+  coord_flip()+scale_size_manual(values=c(0.1, 0.2))
+
+peaks_infraspinatus_bymovement <- ggplot(sub, aes(x = movement_condition, y=max_infra,group=interaction(weight_condition, movement_condition))) +
+  geom_quasirandom(aes(color = weight_condition, shape = weight_condition), alpha = 0.4, dodge.width = 0.8, cex = 1) +
+  geom_boxplot(aes(size= weight_condition), alpha = 0) +
+  theme_cowplot(12) +
+  theme(axis.text.x = element_text(angle = 0, size = 7)) +
+  xlab("movement condition") +
+  ggtitle('Infraspinatus (external rotator)') +
+  ylab('max sEMG activity \n (normalized)') +
+  theme(plot.title = element_text(hjust = 0.5, size = 10, color = col_infraspinatus)) +
+  scale_colour_brewer(palette = 'Set1') +
+  theme(legend.title=element_blank()) +
+  theme(legend.position = c(0.8, 0.8), legend.key.size = unit(.2, 'cm')) +
+  ylim(-0.1, 5) +
+  geom_hline(yintercept=median(sub$max_infra[sub$movement_condition == 'no movement']), linetype='dashed') +
+  coord_flip()+scale_size_manual(values=c(0.1, 0.2))
+
+
+peaks_rectus_bymovement <- ggplot(sub, aes(x = movement_condition, y=max_rectus,group=interaction(weight_condition, movement_condition))) +
+  geom_quasirandom(aes(color = weight_condition, shape = weight_condition), alpha = 0.4, dodge.width = 0.8, cex = 1) +
+  geom_boxplot(aes(size= weight_condition), alpha = 0) +
+  theme_cowplot(12) +
+  theme(axis.text.x = element_text(angle = 0, size = 7)) +
+  xlab("movement condition") +
+  ggtitle('Rectus abdominis (flexor)') +
+  ylab('max sEMG activity \n (normalized)') +
+  theme(plot.title = element_text(hjust = 0.5, size = 10, color = col_rectus)) +
+  scale_colour_brewer(palette = 'Set1') +
+  theme(legend.title=element_blank()) +
+  theme(legend.position = c(0.8, 0.8), legend.key.size = unit(.2, 'cm')) +
+  ylim(-0.1, 5) +
+  geom_hline(yintercept=median(sub$max_rectus[sub$movement_condition == 'no movement']), linetype='dashed') +
+  coord_flip()+scale_size_manual(values=c(0.1, 0.2))
+
+
+peaks_erector_bymovement <- ggplot(sub, aes(x = movement_condition, y=max_erector,group=interaction(weight_condition, movement_condition))) +
+  geom_quasirandom(aes(color = weight_condition, shape = weight_condition), alpha = 0.4, dodge.width = 0.8, cex = 1) +
+  geom_boxplot(aes(size = weight_condition), alpha = 0) +
+  theme_cowplot(12) +
+  theme(axis.text.x = element_text(angle = 0, size = 7)) +
+  xlab("movement condition") +
+  ggtitle('Erector spinae (extensor)') +
+  ylab('max sEMG activity \n (normalized)') +
+  theme(plot.title = element_text(hjust = 0.5, size = 10, color = col_erector)) +
+  scale_colour_brewer(palette = 'Set1') +
+  theme(legend.title=element_blank()) +
+  theme(legend.position = c(0.8, 0.8), legend.key.size = unit(.2, 'cm')) +
+  ylim(-0.1, 5) +
+  geom_hline(yintercept=median(sub$max_erector[sub$movement_condition == 'no movement']), linetype='dashed') +
+  coord_flip()+scale_size_manual(values=c(0.1, 0.2))
+
+# Center of Pressure
+peaks_COPx_bymovement <- ggplot(sub, aes(x = movement_condition, y=max_COPxc,group=interaction(weight_condition, movement_condition))) +
+  geom_quasirandom(aes(color = weight_condition, shape = weight_condition), alpha = 0.4, dodge.width = 0.8, cex = 1) +
+  geom_boxplot(aes(size = weight_condition), alpha = 0) +
+  theme_cowplot(12) +
+  theme(axis.text.x = element_text(angle = 0, size = 7)) +
+  xlab("movement condition") +
+  ggtitle('Center of Pressure Medial-Lateral') +
+  ylab('max COP \n (normalized)') +
+  theme(plot.title = element_text(hjust = 0.5, size = 10, color = "grey")) +
+  scale_colour_brewer(palette = 'Set1') +
+  theme(legend.title=element_blank()) +
+  theme(legend.position = c(0.8, 0.8), legend.key.size = unit(.2, 'cm')) +
+  ylim(-0.1, 5) +
+  geom_hline(yintercept=median(sub$max_COPxc[sub$movement_condition == 'no movement']), linetype='dashed') +
+  coord_flip()+scale_size_manual(values=c(0.1, 0.2))
+
+# also a summary as a function of weight
+peaks_COPy_bymovement <- ggplot(sub, aes(x = movement_condition, y=max_COPyc,group=interaction(weight_condition, movement_condition))) +
+  geom_quasirandom(aes(color = weight_condition, shape = weight_condition), alpha = 0.4, dodge.width = 0.8, cex = 1) +
+  geom_boxplot(aes(size = weight_condition), alpha = 0) +
+  theme_cowplot(12) +
+  theme(axis.text.x = element_text(angle = 0, size = 7)) +
+  xlab("movement condition") +
+  ggtitle('Center of Pressure Anterior-Posterior') +
+  ylab('max COP Anterior-Posterior \n (normalized)') +
+  theme(plot.title = element_text(hjust = 0.5, size = 10, color = "grey")) +
+  scale_colour_brewer(palette = 'Set1') +
+  theme(legend.title=element_blank()) +
+  theme(legend.position = c(0.8, 0.8), legend.key.size = unit(.2, 'cm')) +
+  ylim(-0.1, 5) +
+  geom_hline(yintercept=median(sub$max_COPyc[sub$movement_condition == 'no movement']), linetype='dashed') +
+  coord_flip()+scale_size_manual(values=c(0.1, 0.2))
+
+# kinematics
+peaks_kinematicssp_bymovement <- ggplot(sub, aes(x = movement_condition, y=peak_speed,group=interaction(weight_condition, movement_condition))) +
+  geom_quasirandom(aes(color = weight_condition, shape = weight_condition), alpha = 0.4, dodge.width = 0.8, cex = 1) +
+  geom_boxplot(aes(size = weight_condition), alpha = 0) +
+  theme_cowplot(12) +
+  theme(axis.text.x = element_text(angle = 0, size = 7)) +
+  xlab("movement condition") +
+  ggtitle('Kinematics') +
+  ylab('peak speed \n (normalized)') +
+  theme(plot.title = element_text(hjust = 0.5, size = 10, color = "black")) +
+  scale_colour_brewer(palette = 'Set1') +
+  theme(legend.title=element_blank()) +
+  theme(legend.position = c(0.8, 0.8), legend.key.size = unit(.2, 'cm')) +
+  ylim(-0.1, 5) +
+  geom_hline(yintercept=median(sub$peak_speed[sub$movement_condition == 'no movement']), linetype='dashed') +
+  coord_flip()+scale_size_manual(values=c(0.1, 0.2))
+
+# kinematics
+peaks_kinematicsacc_bymovement <- ggplot(sub, aes(x = movement_condition, y=peak_acc,group=interaction(weight_condition, movement_condition))) +
+  geom_quasirandom(aes(color = weight_condition), alpha = 0.4, dodge.width = 0.8, cex = 1) +
+  geom_boxplot(aes(size = weight_condition), alpha = 0) +
+  theme_cowplot(12) +
+  theme(axis.text.x = element_text(angle = 0, size = 7)) +
+  xlab("movement condition") +
+  ggtitle('Kinematics') +
+  ylab('peak acceleration \n (normalized)') +
+  theme(plot.title = element_text(hjust = 0.5, size = 10, color = "black")) +
+  scale_colour_brewer(palette = 'Set1') +
+  theme(legend.title=element_blank()) +
+  theme(legend.position = c(0.8, 0.8), legend.key.size = unit(.2, 'cm')) +
+  ylim(-0.1, 5) +
+  geom_hline(yintercept=median(sub$peak_acc[sub$movement_condition == 'no movement']), linetype='dashed') +
+  coord_flip()+scale_size_manual(values=c(0.1, 0.2))
+```
+
+```{r movementpeakmuscleactivityplot, echo=FALSE, fig.cap = "Muscle, postural, and kinematic changes for different movement and weight conditions.", fig.height = 12}
+grid.arrange(peaks_pectoralis_bymovement, peaks_infraspinatus_bymovement, peaks_rectus_bymovement, peaks_erector_bymovement,peaks_COPx_bymovement,peaks_COPy_bymovement, 
+             peaks_kinematicssp_bymovement, peaks_kinematicsacc_bymovement, ncol = 2)
+```
+
+<aside>
+<span style="color: red;">
+This plot is partially reproduced and referred to as Figure 2 in the main report.
+</span>
+</aside>
+
+```{r manipchecktable, echo = TRUE, evaluate = FALSE, message = FALSE, warning = FALSE, code_folding = "Show code producing statistics for the table"}
+library(dplyr)
+library(kableExtra)
+
+sub <- tr_wd[ tr_wd$trialindex>9 & tr_wd$vocal_condition=="vocalize" , ] #only real trials
+
+sub$max_pectoral <- scale(sub$max_pectoral, center = FALSE)[,1]
+sub$max_infra    <- scale(sub$max_infra, center = FALSE )[,1]
+sub$max_rectus   <- scale(sub$max_rectus, center = FALSE)[,1]
+sub$max_erector  <- scale(sub$max_erector, center = FALSE)[,1]
+sub$max_COPc     <- scale(sub$max_COPc, center = FALSE)[,1]
+sub$max_COPxc    <- scale(sub$max_COPxc, center = FALSE)[,1]
+sub$max_COPyc    <- scale(sub$max_COPyc, center = FALSE)[,1] 
+sub$peak_speed   <- scale(sub$peak_speed, center = FALSE)[,1]
+sub$peak_acc     <- scale(sub$peak_acc, center = FALSE)[,1]
+
+# Function to calculate 95% CI
+calc_ci <- function(x) {
+  n <- length(x)
+  error <- qt(0.975, df = n-1) * sd(x)/sqrt(n)
+  c(mean(x) - error, mean(x) + error)
+}
+
+library(dplyr)
+library(kableExtra)
+
+# First create the summary table as before
+summary_table <- sub %>%
+  group_by(movement_condition, weight_condition) %>%
+  summarize(
+    # Muscles
+    Pectoralis = {
+      ci <- calc_ci(max_pectoral)
+      sprintf("%.2f (+-%.2f)\n[%.2f - %.2f]", 
+              mean(max_pectoral), sd(max_pectoral), ci[1], ci[2])
+    },
+    Infraspinatus = {
+      ci <- calc_ci(max_infra)
+      sprintf("%.2f (+-%.2f)\n[%.2f - %.2f]", 
+              mean(max_infra), sd(max_infra), ci[1], ci[2])
+    },
+    Rectus = {
+      ci <- calc_ci(max_rectus)
+      sprintf("%.2f (+-%.2f)\n[%.2f - %.2f]", 
+              mean(max_rectus), sd(max_rectus), ci[1], ci[2])
+    },
+    Erector = {
+      ci <- calc_ci(max_erector)
+      sprintf("%.2f (+-%.2f)\n[%.2f - %.2f]", 
+              mean(max_erector), sd(max_erector), ci[1], ci[2])
+    },
+    # COP
+    COP_ML = {
+      ci <- calc_ci(max_COPxc)
+      sprintf("%.2f (+-%.2f)\n[%.2f - %.2f]", 
+              mean(max_COPxc), sd(max_COPxc), ci[1], ci[2])
+    },
+    COP_AP = {
+      ci <- calc_ci(max_COPyc)
+      sprintf("%.2f (+-%.2f)\n[%.2f - %.2f]", 
+              mean(max_COPyc), sd(max_COPyc), ci[1], ci[2])
+    },
+    # Kinematics
+    Peak_Speed = {
+      ci <- calc_ci(peak_speed)
+      sprintf("%.2f (+-%.2f)\n[%.2f - %.2f]", 
+              mean(peak_speed), sd(peak_speed), ci[1], ci[2])
+    },
+    Peak_Acc = {
+      ci <- calc_ci(peak_acc)
+      sprintf("%.2f (+-%.2f)\n[%.2f - %.2f]", 
+              mean(peak_acc), sd(peak_acc), ci[1], ci[2])
+    },
+    .groups = "drop"
+  )
+
+# Define colors
+muscle_colors <- c(Pectoralis = "#e41a1c", 
+                  Infraspinatus = "#377eb8", 
+                  Rectus = "#4daf4a", 
+                  Erector = "#984ea3")
+cop_color <- "#666666"
+kinematics_color <- "#000000"
+```
+
+```{r manipchecktableS1, echo=FALSE, warning =FALSE, message =FALSE, code_folding = "Show code producing the table"}
+# First clean the data by replacing the encoded +- symbol with regular parentheses
+summary_table_clean <- summary_table %>%
+  mutate(
+    across(where(is.character), ~iconv(., "latin1", "UTF-8", sub="")),
+    across(where(is.character), ~gsub("[^[:print:]\n]", "", .))
+  )
+
+# Then create your table with the cleaned data
+summary_table_clean %>%
+  kbl(caption = "Numerical information (z-scaled values) related to Figure S4 (or Figure 2 in the main report). COP_ML = Change in center of pressure medial-lateral, COP_AP = COPc anterior-posterior.",
+      escape = FALSE) %>% 
+  kable_paper("hover", full_width = T) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                full_width = FALSE,
+                font_size = 12) %>%
+  add_header_above(c(" " = 2, 
+                    "Muscle Activity" = 4,
+                    "Center of Pressure" = 2,
+                    "Kinematics" = 2)) %>%
+  column_spec(1:2, bold = TRUE) %>%
+  column_spec(3, color = muscle_colors["Pectoralis"]) %>%
+  column_spec(4, color = muscle_colors["Infraspinatus"]) %>%
+  column_spec(5, color = muscle_colors["Rectus"]) %>%
+  column_spec(6, color = muscle_colors["Erector"]) %>%
+  column_spec(7:8, color = cop_color) %>%
+  column_spec(9:10, color = kinematics_color) %>%
+  row_spec(0, bold = TRUE) %>%
+  footnote(general = "Values are presented as: Mean (SD) [95% CI]")
+
+#################################### also save the table as excell doc
+library(openxlsx)
+
+# Create a workbook
+wb <- createWorkbook()
+
+# Add a worksheet
+addWorksheet(wb, "Table S1")
+
+# Write the data
+writeData(wb, "Table S1", summary_table_clean, startRow = 2)
+
+# Add the caption in the first row
+writeData(wb, "Table S1", "Numerical information (z-scaled values) related to Figure S4 (or Figure 2 in the main report). COP_ML = Change in center of pressure medial-lateral, COP_AP = COPc anterior-posterior.", 
+         startRow = 1)
+
+# Add header row
+headerStyle <- createStyle(textDecoration = "bold")
+addStyle(wb, "Table S1", headerStyle, rows = 2, cols = 1:ncol(summary_table_clean))
+
+# Create styles
+muscleStyle1 <- createStyle(fontColour = muscle_colors["Pectoralis"])
+muscleStyle2 <- createStyle(fontColour = muscle_colors["Infraspinatus"])
+muscleStyle3 <- createStyle(fontColour = muscle_colors["Rectus"])
+muscleStyle4 <- createStyle(fontColour = muscle_colors["Erector"])
+copStyle <- createStyle(fontColour = cop_color)
+kinStyle <- createStyle(fontColour = kinematics_color)
+
+# Apply styles column by column
+rows_to_style <- 3:(nrow(summary_table_clean)+2)
+
+# Individual columns
+addStyle(wb, "Table S1", muscleStyle1, cols = 3, rows = rows_to_style)
+addStyle(wb, "Table S1", muscleStyle2, cols = 4, rows = rows_to_style)
+addStyle(wb, "Table S1", muscleStyle3, cols = 5, rows = rows_to_style)
+addStyle(wb, "Table S1", muscleStyle4, cols = 6, rows = rows_to_style)
+
+# For columns 7-8 (COP)
+for(col in 7:8) {
+    addStyle(wb, "Table S1", copStyle, cols = col, rows = rows_to_style)
+}
+
+# For columns 9-10 (Kinematics)
+for(col in 9:10) {
+    addStyle(wb, "Table S1", kinStyle, cols = col, rows = rows_to_style)
+}
+
+# Add footer
+writeData(wb, "Table S1", "Values are presented as: Mean (SD) [95% CI]", 
+         startRow = nrow(summary_table_clean) + 3)
+
+# Save workbook
+saveWorkbook(wb, "tableS1_output.xlsx", overwrite = TRUE)
+
+```
+<aside>
+<span style="color: red;">
+This is referred to as Table S1 in the paper.
+</span>
+</aside>
+
+#### Statistical tests for manipulation checking of movement vs. no movement condition on muscle and postural measurements
+
+First we report whether our manipulation of movement vs. no movement (binary comparison) indeed increases postural and muscle activity. As expected, the increased activity of muscles, except the rectus abdominis, is confirmed by comparing mixed regression models (participant as random intercept) predicting magnitude of the peak muscle activity with a movement vs. no movement predictor included, versus a model predicting the overall mean.
+
+```{r simpletestofeffectsofmovement, echo = FALSE, code_folding = "Show code for testing movement vs. no movement analysis"}
+sub <- tr_wd[ tr_wd$trialindex>9,] #only real trials
+
+sub$movyn <- factor(ifelse(sub$movement_condition == 'no movement', 0, 1))
+  # perform a simple t-test movement no movement
+    # pectoralis
+nullmodel <- lmer(max_pectoral ~ 1 + (1 | ppn), data = sub)
+modelmov <- lmer(max_pectoral ~ movyn + (1 | ppn), data = sub)
+modcompare_yn_pectoralis <- anova(nullmodel, modelmov)
+
+  # infra
+nullmodel <- lmer(max_infra ~ 1 + (1 | ppn), data = sub)
+modelmov <- lmer(max_infra ~ movyn + (1 | ppn), data = sub)
+modcompare_yn_infra <- anova(nullmodel, modelmov)
+
+  # rectus
+nullmodel <- lmer(max_rectus ~ 1 + (1 | ppn), data = sub)
+modelmov <- lmer(max_rectus ~ movyn + (1 | ppn), data = sub)
+modcompare_yn_rectus <- anova(nullmodel, modelmov)
+
+  # erector
+nullmodel <- lmer(max_erector ~ 1 + (1 | ppn), data = sub)
+modelmov <- lmer(max_erector ~ movyn + (1 | ppn), data = sub)
+modcompare_yn_erector <- anova(nullmodel, modelmov)
+
+# COPc comparison
+nullmodel <- lmer(max_COPc ~ 1+ (1 | ppn), data = sub)
+modelmov <- lmer(max_COPc ~ movyn + (1 | ppn), data = sub)
+modcompare_yn_cop <- anova(nullmodel, modelmov)
+
+# put in a table
+modcompare_yn <- data.frame(
+  Measure = c('movement vs. no movement (pectoralis)', 
+              'movement vs. no movement (infraspinatus)', 
+              'movement vs. no movement (rectus abdominis)', 
+              'movement vs. no movement (erector spinae)',
+              'movement vs. no movement (COPc)'), 
+  Chi2 = round(c(modcompare_yn_pectoralis$'Chisq'[2], 
+                 modcompare_yn_infra$'Chisq'[2], 
+                 modcompare_yn_rectus$'Chisq'[2], 
+                 modcompare_yn_erector$'Chisq'[2],
+                 modcompare_yn_cop$'Chisq'[2]), 4),
+  df = c(modcompare_yn_pectoralis$'Df'[2], 
+         modcompare_yn_infra$'Df'[2], 
+         modcompare_yn_rectus$'Df'[2], 
+         modcompare_yn_erector$'Df'[2],
+         modcompare_yn_cop$'Df'[2]),
+  pvalue = round(c(modcompare_yn_pectoralis$'Pr(>Chisq)'[2], 
+                   modcompare_yn_infra$'Pr(>Chisq)'[2], 
+                   modcompare_yn_rectus$'Pr(>Chisq)'[2], 
+                   modcompare_yn_erector$'Pr(>Chisq)'[2],
+                   modcompare_yn_cop$'Pr(>Chisq)'[2]), 4)
+)
+
+# Create nice formatted table with kableExtra
+nice_table <- modcompare_yn %>%
+  kbl(caption = "Model Comparisons for Movement vs. No Movement",
+      col.names = c("Measure", "Chi-Square", "df", "p-value")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                full_width = FALSE) %>%
+  column_spec(1, bold = TRUE) %>%
+  pack_rows("Muscle Activity", 1, 4) %>%
+  pack_rows("Center of Pressure", 5, 5)
+```
+
+```{r musclemovementdescriptiveb, echo=FALSE}
+knitr::kable(modcompare_yn,
+             caption = "Muscle and postural activity predicted by presence of movement versus no movement") %>% 
+  kable_paper("hover", full_width = T)
+```
+<aside>
+<span style="color: red;">
+This is referred to as Table S2 in the paper.
+</span>
+</aside>
+
+#### Statistical tests for manipulation checking of differences between movement-only conditions on muscle, postural, and kinematic measurements
+
+We assessed whether there is an effect of weight in movement-only conditions over and above a model that includes a movement predictor. We find that weight indeed affects all measured muscle activity except the rectus abdominis. Weight also affects kinematics, confirmed the lower speeds and accelerations for when moving with a weight (Table S1, Figure S4). However, the weight did not find statistically reliable effects of weight on the change in the center of pressure.
+
+```{r simpletestofeffectsofweight, code_folding = "Show code for assessing effects between of weight condition for the movement-only conditions"}
+sub <- tr_wd[ tr_wd$trialindex>9 & tr_wd$movement_condition != 'no movement',] #only real trials
+
+  # perform a simple t-test movement no movement
+    # pectoralis
+nullmodel <- lmer(max_pectoral ~ movement_condition + (1 | ppn), data = sub)
+modelmov <- lmer(max_pectoral ~ movement_condition+weight_condition + (1 | ppn), data = sub)
+modcompare_yn_pectoralis <- anova(nullmodel, modelmov)
+
+  # infra
+nullmodel <- lmer(max_infra ~ movement_condition + (1 | ppn), data = sub)
+modelmov <- lmer(max_infra ~ movement_condition+weight_condition + (1 | ppn), data = sub)
+modcompare_yn_infra <- anova(nullmodel, modelmov)
+
+  # rectus
+nullmodel <- lmer(max_rectus ~ movement_condition + (1 | ppn), data = sub)
+modelmov <- lmer(max_rectus ~ movement_condition+weight_condition + (1 | ppn), data = sub)
+modcompare_yn_rectus <- anova(nullmodel, modelmov)
+
+  # erector
+nullmodel <- lmer(max_erector ~ movement_condition + (1 | ppn), data = sub)
+modelmov <- lmer(max_erector ~ movement_condition+weight_condition + (1 | ppn), data = sub)
+modcompare_yn_erector <- anova(nullmodel, modelmov)
+
+  # also check for speed
+nullmodel <- lmer(peak_speed ~ movement_condition + (1 | ppn), data = sub)
+modelmov <- lmer(peak_speed ~ movement_condition+weight_condition + (1 | ppn), data = sub)
+modcompare_yn_speed <- anova(nullmodel, modelmov)
+
+# COP comparison
+nullmodel <- lmer(max_COPc ~ movement_condition + (1 | ppn), data = sub)
+modelmov <- lmer(max_COPc ~ movement_condition+weight_condition + (1 | ppn), data = sub)
+modcompare_yn_cop <- anova(nullmodel, modelmov)
+
+  # also check for speed and acceleration
+nullmodel <- lmer(peak_acc ~ movement_condition + (1 | ppn), data = sub)
+modelmov <- lmer(peak_acc ~ movement_condition+weight_condition + (1 | ppn), data = sub)
+modcompare_yn_acc <- anova(nullmodel, modelmov)
+
+# put in a table
+modcompare_yn <- data.frame(Muscle = c('Weight vs. no weight (pectoralis major)', 'Weight vs. no weight  (infraspinatus)', 'Weight vs. no weight (rectus abdominis)', 'Weight vs. no weight (erector spinae)', 'Weight vs. no weight (wrist speed)','Weight vs. no weight (wrist acceleration)', 'Weight vs. no weight (COP)'), 
+                            Chi2 = round(c(modcompare_yn_pectoralis$'Chisq'[2], modcompare_yn_infra$'Chisq'[2], modcompare_yn_rectus$'Chisq'[2], modcompare_yn_erector$'Chisq'[2], modcompare_yn_speed$'Chisq'[2], modcompare_yn_acc$'Chisq'[2], modcompare_yn_cop$'Chisq'[2]), 4),
+                            df = c(modcompare_yn_pectoralis$'Df'[2], modcompare_yn_infra$'Df'[2], modcompare_yn_rectus$'Df'[2], modcompare_yn_erector$'Df'[2], modcompare_yn_speed$'Df'[2], modcompare_yn_acc$'Df'[2], modcompare_yn_cop$'Df'[2]),
+                            pvalue = round(c(modcompare_yn_pectoralis$'Pr(>Chisq)'[2], modcompare_yn_infra$'Pr(>Chisq)'[2], modcompare_yn_rectus$'Pr(>Chisq)'[2], modcompare_yn_erector$'Pr(>Chisq)'[2], modcompare_yn_speed$'Pr(>Chisq)'[2], modcompare_yn_acc$'Pr(>Chisq)'[2], modcompare_yn_cop$'Pr(>Chisq)'[2]), 4))
+
+```
+
+
+```{r musclemovementdescriptive6, echo=FALSE}
+knitr::kable(modcompare_yn,
+             caption = "Muscle activity predicted by presence of weight in the movement conditions over and above an effect of movement condition ") %>% 
+  kable_paper("hover", full_width = T)
+```
+
+#### Statistical tests for manipulation checking of differences between movement-only conditions on muscle, postural, and kinematic measurements
+
+We performed the same type of manipulation check to assess whether there are any differences in posture (anterior posterior, medial-lateral), muscle activity, and kinematics (speed and acceleration), between the different types of movements (i.e., the movement-only conditions). We only test overall effects of movement conditions, versus a model predicting the overall mean (but also see table S1 and Figure S4 for detailed information). As can be seen, different types of movements lead to different peak muscle activity (except for the rectus abdominis), as well as leading to different peak change of center of pressure and kinematics (speed and acceleration).
+
+
+```{r addedsimpleeffectofmovementconditions, code_folding = "Show code for assessing effects between movement-only conditions", warning=FALSE}
+sub <- tr_wd[ tr_wd$trialindex>9 & tr_wd$movement_condition != 'no movement',] #only mov trials
+  # perform a simple t-test movement no movement
+    # pectoralis
+nullmodel <- lmer(max_pectoral ~ 1 + (1 | ppn), data = sub)
+modelmov <- lmer(max_pectoral ~ movement_condition + (1 | ppn), data = sub)
+modcompare_perm_pectoralis <- anova(nullmodel, modelmov)
+  # infra
+nullmodel <- lmer(max_infra ~ 1 + (1 | ppn), data = sub)
+modelmov <- lmer(max_infra ~ movement_condition + (1 | ppn), data = sub)
+modcompare_perm_infra <- anova(nullmodel, modelmov)
+  # rectus
+nullmodel <- lmer(max_rectus ~ 1 + (1 | ppn), data = sub)
+modelmov <- lmer(max_rectus ~ movement_condition + (1 | ppn), data = sub)
+modcompare_perm_rectus <- anova(nullmodel, modelmov)
+  # erector
+nullmodel <- lmer(max_erector ~ 1 + (1 | ppn), data = sub)
+modelmov <- lmer(max_erector ~ movement_condition + (1 | ppn), data = sub)
+modcompare_perm_erector <- anova(nullmodel, modelmov)
+# COP Comparisons
+nullmodel <- lmer(max_COPxc ~ 1 + (1 | ppn), data = sub)
+modelmov <- lmer(max_COPxc ~ movement_condition + (1 | ppn), data = sub)
+modcompare_perm_copx <- anova(nullmodel, modelmov)
+nullmodel <- lmer(max_COPyc ~ 1 + (1 | ppn), data = sub)
+modelmov <- lmer(max_COPyc ~ movement_condition + (1 | ppn), data = sub)
+modcompare_perm_copy <- anova(nullmodel, modelmov)
+# Kinematics
+nullmodel <- lmer(peak_speed ~ 1 + (1 | ppn), data = sub)
+modelmov <- lmer(peak_speed ~ movement_condition + (1 | ppn), data = sub)
+modcompare_perm_speed <- anova(nullmodel, modelmov)
+nullmodel <- lmer(peak_acc ~ 1 + (1 | ppn), data = sub)
+modelmov <- lmer(peak_acc ~ movement_condition + (1 | ppn), data = sub)
+modcompare_perm_acc <- anova(nullmodel, modelmov)
+
+# Create table with rounded values
+manipchecktableperm <- data.frame(
+  Muscle = c('pectoralis', 'infraspinatus', 'rectus', 'erector', 
+             'COPc (medial-lateral)', 'COPc (anterior-posterior)',
+             'peak speed', 'peak acceleration'), 
+  Chi2 = round(c(modcompare_perm_pectoralis$'Chisq'[2], 
+                 modcompare_perm_infra$'Chisq'[2], 
+                 modcompare_perm_rectus$'Chisq'[2], 
+                 modcompare_perm_erector$'Chisq'[2],
+                 modcompare_perm_copx$'Chisq'[2],
+                 modcompare_perm_copy$'Chisq'[2],
+                 modcompare_perm_speed$'Chisq'[2],
+                 modcompare_perm_acc$'Chisq'[2]), 4),
+  df = c(modcompare_perm_pectoralis$'Df'[2], 
+         modcompare_perm_infra$'Df'[2], 
+         modcompare_perm_rectus$'Df'[2], 
+         modcompare_perm_erector$'Df'[2],
+         modcompare_perm_copx$'Df'[2],
+         modcompare_perm_copy$'Df'[2],
+         modcompare_perm_speed$'Df'[2],
+         modcompare_perm_acc$'Df'[2]),
+  pvalue = round(c(modcompare_perm_pectoralis$'Pr(>Chisq)'[2], 
+                   modcompare_perm_infra$'Pr(>Chisq)'[2], 
+                   modcompare_perm_rectus$'Pr(>Chisq)'[2], 
+                   modcompare_perm_erector$'Pr(>Chisq)'[2],
+                   modcompare_perm_copx$'Pr(>Chisq)'[2],
+                   modcompare_perm_copy$'Pr(>Chisq)'[2],
+                   modcompare_perm_speed$'Pr(>Chisq)'[2],
+                   modcompare_perm_acc$'Pr(>Chisq)'[2]), 4)
+)
+```
+
+```{r musclemovementdescriptive3, echo=FALSE}
+knitr::kable(manipchecktableperm,
+             caption = "Muscle and postural activity predicted by different types of movements versus a null model") %>% 
+  kable_paper("hover", full_width = T)
+```
+<aside>
+<span style="color: red;">
+This is referred to as Table S4 in the paper.
+</span>
+</aside>
+
+## Main Confirmatory Analyses
+We planned three confirmatory analyses as outlined in the pre-registration, where we assessed whether:
+
+#### 1. Movement and weight conditions have (different) effects on vocalization amplitude
+
+**H0 I:** The movement and weight conditions, as compared to control movement conditions (passive, no weight conditions) do not affect vocalization amplitude.
+
+#### 2. Muscle Activity Effects on Vocalization Amplitude
+
+**H0 II:** Muscle activity (differentially) affects amplitude of vocalization
+
+#### 3. Postural muscle activity is related to postural stability (change in center of pressure)
+
+**H0 III:** No muscle activity is related to postural stability in any of the conditions.
+
+As pre-registered, for the current confirmatory analyses we focus on the vocalization condition, ignoring the expiration baseline conditions as they are of secondary interest at this point of our inquiry.
+
+### Research Question 1: Do movement and weight conditions have (different) effects on vocalization amplitude? {#analysis-1}
+From inspecting the summarized trajectories, and the descriptive exploratory analyses above, we obtain that the internal rotation of the arm seems to start with a negative peak around the onset of the movement, which is followed by a positive peak. Furthermore, we observe that all other movements primarily have a positive peak. A straightforward test of whether the amplitude envelope has positive or negative peaks is to assess differences in peaks in the vocalization conditions per movement (and weight) condition.  
+
+```{r, echo = TRUE, warning = FALSE, message = FALSE, code_folding = "Show code producing the plot"}
+sub <- tr_wd[ tr_wd$trialindex>9 & tr_wd$vocal_condition=='vocalize',] #only real trials
+
+#reorder values & turn into factor
+sub$movement_condition <- factor(sub$movement_condition, levels=c(
+  "no movement",
+  "internal rotation",
+  "external rotation",
+  "flexion",
+  "extension"))
+#rename no_weight in no weight
+sub$weight_condition <- dplyr::recode(sub$weight_condition,
+                               weight = "weight",
+                               no_weight = "no weight")
+#turn into factor
+sub$weight_condition <- factor(sub$weight_condition, levels=c(
+  "no weight",
+  "weight"))
+
+
+pospeakamplitudemovement <- ggplot(sub, aes(x = movement_condition, y = max_amp_c_around_move)) +
+  geom_quasirandom(size = 2,alpha = 0.5, dodge.width=0.8, cex=1, color = "#476378ff") +
+  geom_boxplot(alpha = 0, linewidth = 0.75) +
+  theme_cowplot(12) +
+  theme(axis.text.x = element_text(angle = 90, size = 10)) +
+  xlab("movement condition") +
+  ggtitle("Positive peak amplitude") +
+  ylab("amplitude") +
+  scale_colour_brewer(palette = "Set1") +
+  theme(legend.title  =element_blank()) +
+  geom_hline(yintercept = median(sub$max_amp_c_around_move[sub$movement_condition == "no movement"]), size=2, alpha=0.5, color = "blue") +
+  ylim(-0.2, 2.3)
+
+negpeakamplitudemovement <- ggplot(sub, aes(x = movement_condition, y = min_amp_c_around_move)) +
+  geom_quasirandom(size = 2, alpha = 0.5, dodge.width = 0.8, cex = 1, color = "#476378ff") +
+  geom_boxplot(alpha = 0, linewidth = 0.75) +
+  theme_cowplot(12) +
+  theme(axis.text.x = element_text(angle = 90, size = 10)) +
+  xlab("movement condition") +
+  ggtitle('Negative peak amplitude') +
+  ylab("amplitude") +
+  scale_colour_brewer(palette = "Set1") +
+  theme(legend.title = element_blank()) +
+  geom_hline(yintercept = median(sub$min_amp_c_around_move[sub$movement_condition == "no movement"]), size = 2, alpha = 0.5, color = "blue") +
+  ylim(-2.3, 0.2)
+
+pospeakamplitudeweight <- ggplot(sub[sub$movement_condition != 'no movement', ], aes(x = weight_condition, y = max_amp_c_around_move)) +
+  geom_quasirandom(size = 2, alpha = 0.5, dodge.width = 0.8, cex = 1, color = "#476378ff") +
+  geom_boxplot(alpha = 0, linewidth = 0.75) +
+  theme_cowplot(12) +
+  theme(axis.text.x = element_text(angle = 90, size = 10)) +
+  xlab("weight condition") +
+  ggtitle("Positive peak amplitude") +
+  ylab("amplitude") +
+  scale_colour_brewer(palette = "Set1") +
+  theme(legend.title=element_blank()) +
+  ylim(-0.2, 2.3)
+
+negpeakamplitudeweight <- ggplot(sub[sub$movement_condition != 'no movement', ], aes(x = weight_condition,y = min_amp_c_around_move)) +
+  geom_quasirandom(size = 2, alpha = 0.5, dodge.width = 0.8, cex = 1, color = "#476378ff") +
+  geom_boxplot(alpha = 0, linewidth = 0.75) +
+  theme_cowplot(12) +
+  theme(axis.text.x = element_text(angle = 90, size = 10)) +
+  xlab("weight condition") +
+  ggtitle("Negative peak amplitude") +
+  ylab("amplitude") +
+  scale_colour_brewer(palette = "Set1") +
+  theme(legend.title=element_blank()) +
+  ylim(-2.3, 0.2)
+
+```
+
+```{r effectsmovementposnegpeaks, cache = TRUE, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = "Effects of movement condition of positive and negative peaks in the voice amplitude. The upper part shows the positive peaks in the amplitude envelope during the different movement and weight conditions. The lower part shows the negative peaks (hence the negative values; note, in the modeling we will absolutize these values). It is clear that relative to vocalization of no movement, there are especially positive, but also more negative peaks in the amplitude envelope for the different movement conditions.", fig.height=10}
+plot_grid(pospeakamplitudemovement, pospeakamplitudeweight, negpeakamplitudemovement, negpeakamplitudeweight, ncol = 2, align='h')
+```
+<aside>
+<span style="color: red;">
+This is referred to as Figure S6 in the paper.
+</span>
+</aside>
+
+```{r, warning = FALSE, message = FALSE, echo = TRUE, cache = TRUE, code_folding = "Show code running models on positive amplitude peaks"}
+sub <- tr_wd[ tr_wd$trialindex>9 & tr_wd$vocal_condition=='vocalize',] #only real trials
+sub$movement_condition <- factor(sub$movement_condition, levels=c('no movement', 'internal rotation', 'external rotation', 'flexion', 'extension'))
+sub$weight_condition <- dplyr::recode(sub$weight_condition,
+                               weight = "weight",
+                               no_weight = "no weight")
+sub$weight_condition <- factor(sub$weight_condition, levels=c("no weight", "weight"))
+
+#model 1
+pospeaks_nullmodel <- lmer(max_amp_c_around_move ~ 1+(1|ppn), data = sub)
+pospeaks_model   <- lmer(max_amp_c_around_move ~ weight_condition + movement_condition + (1|ppn), data = sub)
+pospeaks_comparison <- anova(pospeaks_nullmodel, pospeaks_model)
+
+#table matrix
+  #Estimate, 
+
+modelsummarypospeaksweightmovement <- summary(pospeaks_model)$coefficients
+colnames(modelsummarypospeaksweightmovement) <- c('Estimate', 'SE', 'df', 't-value', 'p-value')
+rownames(modelsummarypospeaksweightmovement) <- c(
+  'Intercept (no movement/no weight)',
+  'vs. weight',
+  'vs. internal rotation',
+  'vs. external rotation',
+  'vs. flexion',
+  'vs. extension')
+
+#posthoc (not necessary at this point)
+#posthoc <- emmeans(modelmax, list(pairwise ~ movement_condition), adjust = "tukey")
+#pcomparisons <- posthoc$`pairwise differences of movement_condition`
+
+  #########################################also make a comparison with only movement conditions for the weight condition (CHANGECONF)
+subsub <- subset(sub, movement_condition != 'no movement')
+#model 1
+pospeaks_nullmodel_onlymovement <- lmer(max_amp_c_around_move ~ 1 + (1 | ppn), data = subsub)
+pospeaks_model_onlymovement   <- lmer(max_amp_c_around_move ~ weight_condition + (1 | ppn), data = subsub)
+pospeaks_comparison_onlymovement <- anova(pospeaks_nullmodel_onlymovement, pospeaks_model_onlymovement)
+
+#table matrix
+  #Estimate, 
+
+modelsummarypospeaksweightmovement_onlymovement <- summary(pospeaks_model_onlymovement)$coefficients
+colnames(modelsummarypospeaksweightmovement_onlymovement) <- c('Estimate', 'SE', 'df', 't-value', 'p-value')
+rownames(modelsummarypospeaksweightmovement_onlymovement) <- c('Intercept (no weight)', 'vs. weight')
+```
+
+We first modeled with a mixed linear regression the variation in *positive* peaks in the amplitude envelope (using R-package lme4), with participant as random intercept (for more complex random slope models did not converge). A model with weight and movement conditions explained more variance than a base model predicting the overall mean, Change in Chi-Squared (`r printnum(round(pospeaks_comparison[2,1]-pospeaks_comparison[1,1]))`) = `r printnum(pospeaks_comparison$Chisq[2])`, *p* `r printnum(ifelse(pospeaks_comparison[2,8] > .001, paste('=', pospeaks_comparison[2,8]), '< .001'))`). The model coefficients are given in Table S\@ref(tab:modelpospeaksweightmovement). It can be seen that there is a positive but not statistically reliable effect of wrist weight in this sample. Further, all movements (extension, flexion, internal rotation, external rotation) lead to statistically reliable increases in positive peaks in the amplitude envelope relative to the no movement condition (with flexion and external rotation leading to more extreme effects).
+
+
+```{r modelpospeaksweightmovement, echo=FALSE}
+knitr::kable(round(modelsummarypospeaksweightmovement, 3),
+             caption = "Effects of weight and movement condition on magnitude positive peaks in amplitude envelope.") %>% 
+  kable_paper("hover", full_width = T)
+```
+<aside>
+<span style="color: red;">
+This is referred to as Table S3 in the paper.
+</span>
+</aside>
+
+Note that in the previous model we assess the role of weight vs. no weight. But during the no movement condition the weight is not affecting the participant. Thus, a better estimate of the effect of wrist weight is to assess weight vs. no weight conditions for only the movement conditions. Below it shows indeed that this comparison further increases the effect strength as compared to a model with the no movement condition included.
+
+```{r modelpospeaksweightmovementonlymovement, echo=FALSE}
+knitr::kable(round(modelsummarypospeaksweightmovement_onlymovement, 3),
+             caption = "Effects of weight on magnitude of positive peaks in amplitude envelope (no movement condition filtered out).") %>% 
+  kable_paper("hover", full_width = T)
+```
+<aside>
+<span style="color: red;">
+This is referred to as Table S4 in the paper.
+</span>
+</aside>
+
+```{r, warning = FALSE, message = FALSE, echo = TRUE, cache = TRUE, code_folding = "Show code running models on negative amplitude peaks"}
+# model 2
+sub <- tr_wd[ tr_wd$trialindex>9 & tr_wd$vocal_condition=='vocalize',] #only real trials
+sub$movement_condition <- factor(sub$movement_condition, levels=c('no movement', 'internal rotation', 'external rotation', 'flexion', 'extension'))
+sub$weight_condition <- dplyr::recode(sub$weight_condition,
+                               weight = "weight",
+                               no_weight = "no weight")
+sub$weight_condition <- factor(sub$weight_condition, levels=c("no weight", "weight"))
+
+sub$min_amp_c_around_move_abs <- abs(sub$min_amp_c_around_move)
+
+negpeaks_nullmodel <- lmer(min_amp_c_around_move_abs ~  1  + (1|ppn), data = sub)
+negpeaks_model <- lmer(min_amp_c_around_move_abs ~  weight_condition + movement_condition + (1|ppn), data = sub)
+negpeaks_comparison <- anova(negpeaks_nullmodel, negpeaks_model)
+
+#table matrix
+modelsummarynegpeaksweightmovement <- summary(negpeaks_model)$coefficients
+colnames(modelsummarynegpeaksweightmovement) <- c('Estimate', 'SE', 'df', 't-value', 'p-value')
+rownames(modelsummarynegpeaksweightmovement) <- c(
+'Intercept (no movement/no weight)',
+'vs. weight',
+'vs. internal rotation',
+'vs. external rotation',
+'vs. flexion',
+'vs. extension')
+
+#also make a comparison with only movement conditions for the weight condition (CHANGECONF)
+subsub <- subset(sub, movement_condition != 'no movement')
+
+negpeaks_nullmodel_onlymovement <- lmer(min_amp_c_around_move ~ 1 + (1 | ppn), data = subsub)
+negpeaks_model_onlymovement   <- lmer(min_amp_c_around_move ~ weight_condition + (1 | ppn), data = subsub)
+negpeaks_comparison_onlymovement <- anova(negpeaks_nullmodel_onlymovement, negpeaks_model_onlymovement)
+
+modelsummarynegpeaksweightmovement_onlymovement <- summary(negpeaks_model_onlymovement)$coefficients
+colnames(modelsummarynegpeaksweightmovement_onlymovement) <- c('Estimate', 'SE', 'df', 't-value', 'p-value')
+rownames(modelsummarynegpeaksweightmovement_onlymovement) <- c('Intercept (no weight)', 'vs. weight')
+```
+
+Secondly, we modeled in a similar way the negative peaks in the amplitude envelope, and found that a model with weight and movement conditions explained more variance than a base model predicting the overall mean, Change in Chi-Squared (`r printnum(round(negpeaks_comparison[2,1]-negpeaks_comparison[1,1]))`) = `r printnum(negpeaks_comparison$Chisq[2])`, *p* `r printnum(ifelse(negpeaks_comparison[2,8] > .001, paste('=', negpeaks_comparison[2,8]), '< .001'))`). Model coefficients are shown in Table S\@ref(tab:modelnegpeaksweightmovement). We find that all movement-only conditions had higher magnitude of negative peaks relative to no movement. Note, in our models, we have absolutized the values of negative peaks, such that positive effects of some condition means higher magnitude negative peaks (i.e., more negative peaks).
+
+```{r modelnegpeaksweightmovement, echo=FALSE}
+knitr::kable(round(modelsummarynegpeaksweightmovement, digits = 3),
+             caption = "Effects of weight and movement condition on magnitude negative peaks in amplitude envelope.") %>% 
+  kable_paper("hover", full_width = T)
+```
+
+```{r modelnegpeaksweightmovementonlymovement, echo=FALSE}
+knitr::kable(round(modelsummarynegpeaksweightmovement_onlymovement, digits = 3),
+             caption = "Effects of weight on magnitude of negative peaks in amplitude envelope (no movement condition filtered out).") %>% 
+  kable_paper("hover", full_width = T)
+```
+
+We further performed an exploratory post-hoc analyses to see if the different movement conditions themselves were reliably different from each other in terms of affecting the voice. We performed Tukey-corrected post-hoc analyses on the linear mixed regression models using R-package 'emmeans'. As can be seen there are no differences between movement-only conditions in terms of the degree they affect the magnitude of positive or negative peaks in the amplitude envelope of the vocalization. 
+
+```{r, warning = FALSE, message = FALSE, echo = FALSE}
+library(lme4)
+library(emmeans)
+library(knitr)
+
+# Assuming we're using the same data preparation as in your original code
+sub <- tr_wd[tr_wd$trialindex > 9 & tr_wd$vocal_condition == 'vocalize',]
+sub$movement_condition <- factor(sub$movement_condition, 
+                               levels=c('no movement', 'internal rotation', 
+                                      'external rotation', 'flexion', 'extension'))
+
+# Fit the model for positive peaks
+model_pos <- lmer(max_amp_c_around_move ~ weight_condition + movement_condition + (1|ppn), 
+                 data = sub)
+
+# Conduct post-hoc analysis with Tukey adjustment
+posthoc_pos <- emmeans(model_pos, specs = 'movement_condition')
+pairs_pos <- pairs(posthoc_pos, adjust = "tukey")
+
+# Convert to data frame and format
+posthoc_table <- data.frame(summary(pairs_pos))
+posthoc_table <- data.frame(
+  Comparison = posthoc_table$contrast,
+  Estimate = round(posthoc_table$estimate, 3),
+  SE = round(posthoc_table$SE, 3),
+  df = round(posthoc_table$df, 1),
+  t.ratio = round(posthoc_table$t.ratio, 3),
+  p.value = round(posthoc_table$p.value, 3)
+)
+
+# Display the table
+kable(posthoc_table, 
+      caption = "Pairwise Comparisons of Movement Conditions (Positive Peaks)",
+      align = c('l', 'r', 'r', 'r', 'r', 'r'))
+
+# Repeat for negative peaks
+# Fit model for negative peaks (using absolute values as in original)
+sub$min_amp_c_around_move_abs <- abs(sub$min_amp_c_around_move)
+model_neg <- lmer(min_amp_c_around_move_abs ~ weight_condition + movement_condition + (1|ppn), 
+                 data = sub)
+
+# Conduct post-hoc analysis
+posthoc_neg <- emmeans(model_neg, specs = 'movement_condition')
+pairs_neg <- pairs(posthoc_neg, adjust = "tukey")
+
+# Convert to data frame and format
+posthoc_table_neg <- data.frame(summary(pairs_neg))
+posthoc_table_neg <- data.frame(
+  Comparison = posthoc_table_neg$contrast,
+  Estimate = round(posthoc_table_neg$estimate, 3),
+  SE = round(posthoc_table_neg$SE, 3),
+  df = round(posthoc_table_neg$df, 1),
+  t.ratio = round(posthoc_table_neg$t.ratio, 3),
+  p.value = round(posthoc_table_neg$p.value, 3)
+)
+
+# Display the table
+kable(posthoc_table_neg,
+      caption = "Pairwise Comparisons of Movement Conditions (Negative Peaks)",
+      align = c('l', 'r', 'r', 'r', 'r', 'r'))
+
+```
+
+### Research Question 2: Do movement and weight conditions have (different) effects on vocalization amplitude?{#analysis-2}
+
+```{r, echo = TRUE, warning = FALSE, message =FALSE, code_folding = "Show code calculating VIF"}
+sub <- tr_wd[tr_wd$vocal_condition == 'vocalize' & tr_wd$trialindex>9,]
+#check VIF
+library(usdm)
+df = cbind.data.frame(sub$max_COPc, sub$max_erector, sub$max_infra, sub$max_pectoral, sub$max_rectus) # Data Frame
+VIFFIES <- vif(df)
+```
+
+Since each movement and weight condition is designed to recruit different muscle activations, we can also directly relate muscle activity peaks with the positive and negative peaks in the amplitude envelope. We use a similar linear mixed regression approach to model variance in vocal amplitude peaks with peaks in muscle activity for the different muscles measured. Since there are correlations between these muscle activities (see Tables S\@ref(tab:corrinternalrotation), S\@ref(tab:correxternalrotation), S\@ref(tab:corrextension), S\@ref(tab:corrflexion)) that could affect effect estimation in linear mixed regression, we first assessed the  Variance Inflation Factors (VIF) between the muscle activity peaks. This yielded a maximum VIF value of `r printnum(round(max(VIFFIES$VIF),2))`. Since this is considered a low value (VIF > 5 is generally considered problematic), we can combine the different muscle activity measurements in one model to predict amplitude envelope peaks. Figure S\@ref(fig:amplitudeEMGpeaks) shows the graphical results of these relationships.
+
+```{r, echo = TRUE, warning = FALSE, message = FALSE, code_folding = "Show code producing the plot"}
+sub <- tr_wd[tr_wd$vocal_condition == 'vocalize' & tr_wd$trialindex>9,]
+
+#normalize
+sub$max_pectoral  <- scale(sub$max_pectoral, center = FALSE)
+sub$max_infra     <- scale(sub$max_infra, center = FALSE)
+sub$max_rectus    <- scale(sub$max_rectus, center = FALSE)
+sub$max_erector   <- scale(sub$max_erector, center = FALSE)
+
+
+pospeakamplitude_peakpectoralis <- ggplot(sub, aes(y = abs(max_amp_c_around_move))) +
+  geom_point(aes(x = max_pectoral, color = 'pectoralis major'), size =0.2) +
+  geom_smooth(aes(x = max_pectoral, color = 'pectoralis major'), method = 'lm') +
+  scale_color_manual(values = colors_mus) +
+  theme_bw() +
+  theme(legend.position = "none") +
+  ylab('positive peak \n amplitude envelope') +
+  xlab('peak sEMG \n pectoralis major') +
+  theme_cowplot() +
+  theme(legend.position = "none") +
+  xlim(0, 7)
+
+pospeakamplitude_peakrectus <- ggplot(sub, aes(y = abs(max_amp_c_around_move))) +
+  geom_point(aes(x = max_rectus, color = 'rectus abdominis'), size = 0.2) +
+  geom_smooth(aes(x = max_rectus, color = 'rectus abdominis'), method = 'lm') +
+  scale_color_manual(values = colors_mus) +
+  theme_bw() +
+  theme(legend.position = "none") +
+  ylab('positive peak \n amplitude envelope') +
+  xlab('peak sEMG \n rectus abdominis') +
+  theme_cowplot() +
+  theme(legend.position = "none") +
+  xlim(0, 7)
+
+pospeakamplitude_peakerector <- ggplot(sub, aes(y=abs(max_amp_c_around_move))) +  
+  geom_point(aes(x = max_erector, color = 'erector spinae'), size =0.2) +
+  geom_smooth(aes(x = max_erector, color = 'erector spinae'), method = 'lm') +
+  scale_color_manual(values = colors_mus) +
+  theme_bw() +
+  theme(legend.position = "none") +
+  ylab('positive peak \n amplitude envelope') +
+  xlab('peak sEMG \n erector spinae') +
+  theme_cowplot() +
+  theme(legend.position = "none") +
+  xlim(0, 7)
+
+pospeakamplitude_peakinfraspinatus <- ggplot(sub, aes(y = abs(max_amp_c_around_move))) +
+  geom_point(aes(x = max_infra, color = 'infraspinatus'), size =0.2) +
+  geom_smooth(aes(x = max_infra, color = 'infraspinatus'), method = 'lm') +
+  scale_color_manual(values = colors_mus) +
+  theme_bw() +
+  theme(legend.position = "none") +
+  ylab('positive peak \n amplitude envelope') +
+  xlab('peak sEMG \n infraspinatus') +
+  theme_cowplot() +
+  theme(legend.position = "none") +
+  xlim(0, 7)
+
+
+negpeakamplitude_peakpectoralis <- ggplot(sub, aes(y = min_amp_c_around_move)) +  
+  geom_point(aes(x = max_pectoral, color = 'pectoralis major'), size =0.2) +
+  geom_smooth(aes(x = max_pectoral, color = 'pectoralis major'), method = 'lm') +
+  scale_color_manual(values = colors_mus) +
+  theme_bw() +
+  theme(legend.position = "none") +
+  ylab('negative peak \n amplitude envelope') +
+  xlab('peak sEMG \n pectoralis major') +
+  theme_cowplot() +
+  theme(legend.position = "none") +
+  xlim(0, 7)
+
+negpeakamplitude_peakrectus <- ggplot(sub, aes(y = min_amp_c_around_move)) +  
+  geom_point(aes(x = max_rectus, color = 'rectus abdominis'), size =0.2) +
+  geom_smooth(aes(x = max_rectus, color = 'rectus abdominis'), method = 'lm') +
+  scale_color_manual(values = colors_mus) +
+  theme_bw() +
+  theme(legend.position="none") +
+  ylab('negative peak \n amplitude envelope') +
+  xlab('peak sEMG \n rectus abdominis') +
+  theme_cowplot() +
+  theme(legend.position = "none") +
+  xlim(0, 7)
+
+negpeakamplitude_peakerector <- ggplot(sub, aes(y = min_amp_c_around_move)) +
+  geom_point(aes(x = max_erector, color = 'erector spinae'), size = 0.2) +
+  geom_smooth(aes(x = max_erector, color = 'erector spinae'), method = 'lm') +
+  scale_color_manual(values = colors_mus) +
+  theme_bw() +
+  theme(legend.position = "none") +
+  ylab('negative peak \n amplitude envelope') +
+  xlab('peak sEMG \n erector spinae') +
+  theme_cowplot() +
+  theme(legend.position = "none") +
+  xlim(0, 7)
+
+negpeakamplitude_peakeinfraspinatus <- ggplot(sub, aes(y = min_amp_c_around_move)) +
+  geom_point(aes(x = max_infra, color = 'infraspinatus'), size =0.2) +
+  geom_smooth(aes(x = max_infra, color = 'infraspinatus'), method = 'lm') +
+  scale_color_manual(values = colors_mus) +
+  theme_bw() +
+  theme(legend.position = "none") +
+  ylab('negative peak \n amplitude envelope') +
+  xlab('peak sEMG \n infraspinatus') +
+  theme_cowplot() +
+  theme(legend.position = "none") +
+  xlim(0, 7)
+```
+
+
+<aside>
+<span style="color: red;"> This refers to Figure 2, panel C (positive) and panel D (negative) of the paper.
+</span>
+</aside> 
+
+```{r amplitudeEMGpeaks, echo=FALSE, message = FALSE, fig.cap = "Relations between peak muscle activity and positive peaks in the amplitude envelope", fig.height=10}
+#plot correlations with both positive and negative peaks together
+#grid.arrange(pospeakamplitudecorrelations, negpeakamplitudecorrelations, ncol = 2)
+grid.arrange(pospeakamplitude_peakpectoralis,
+             negpeakamplitude_peakpectoralis,
+             pospeakamplitude_peakinfraspinatus,
+             negpeakamplitude_peakeinfraspinatus,
+             pospeakamplitude_peakrectus,
+             negpeakamplitude_peakrectus,
+             pospeakamplitude_peakerector,
+             negpeakamplitude_peakerector,
+             nrow = 4,
+             ncol = 2)
+```
+
+
+```{r, echo = TRUE, warning = FALSE, message = FALSE, code_folding = "Show code modeling positive amplitude peaks by muscle"}
+sub <- tr_wd[ tr_wd$trialindex>9 & tr_wd$vocal_condition=='vocalize',] #only real trials
+
+#model 1
+pospeaks_bymuscle_nullmodel <- lmer(max_amp_c_around_move ~ 1 + (1|ppn), data = sub)
+pospeaks_bymuscle <- lmer(max_amp_c_around_move ~ max_erector + max_infra + max_pectoral + max_rectus + (1 | ppn), data = sub)
+pospeaks_bymuscle_comparison <- anova(pospeaks_bymuscle_nullmodel, pospeaks_bymuscle)
+
+#get model summary
+modelsummarypospeaksbymuscle <- summary(pospeaks_bymuscle)$coefficients
+colnames(modelsummarypospeaksbymuscle) <- c('Estimate', 'SE', 'df', 't-value', 'p-value')
+rownames(modelsummarypospeaksbymuscle) <- c('Intercept', 'erector spinae', 'infraspinatus', 'pectoralis major', 'rectus abdominis')
+
+# also do post hoc tests
+```
+
+  A model with participant as random intercept the different peak muscle activities explained more variance than a base model predicting the overall mean, Change in Chi-Squared = `r printnum(pospeaks_bymuscle_comparison$Chisq[2])` (`r printnum(round(pospeaks_bymuscle_comparison[2,1]-pospeaks_bymuscle_comparison[1,1]))`), *p* `r printnum(ifelse(pospeaks_bymuscle_comparison[2,8] > .001, paste('=', pospeaks_bymuscle_comparison[2,8]), '< .001'))`). We also tried to fit a more complex model with random slopes for participants, but such model did not converge. The model coefficients are given in Table S\@ref(tab:modelpospeaksbymuscle). Further, Table S\@ref(tab:modelpospeaksbymuscle) shows that peak EMG activity in all the muscles (except for the rectus abdominis) leads to statistically reliable increases in positive peaks in the amplitude envelope (with stronger effects).
+
+
+```{r modelpospeaksbymuscle, echo=FALSE}
+knitr::kable(round(modelsummarypospeaksbymuscle, 3),
+             caption = "Linear mixed regression model assessing the relation of peak muscle activity with the positive peak in the amplitude envelope.") %>% 
+  kable_paper("hover", full_width = T)
+```
+
+```{r, echo = FALSE, include=FALSE, warning = FALSE, code_folding = "Show code modeling negative amplitude peaks by muscle"}
+sub <- tr_wd[tr_wd$vocal_condition == 'vocalize' & tr_wd$trialindex>9, ]
+
+sub$min_amp_c_around_move_abs <- abs(sub$min_amp_c_around_move)
+
+negpeaks_bymuscle_nullmodel <- lmer(min_amp_c_around_move_abs ~ 1 + ( 1| ppn), data = sub)
+negpeaks_bymuscle <- lmer(min_amp_c_around_move_abs ~ max_erector + max_infra + max_pectoral + max_rectus + (1 | ppn), data = sub)
+negpeaks_bymuscle_comparison <- anova(negpeaks_bymuscle_nullmodel, negpeaks_bymuscle)
+
+
+#get model summary
+modelsummarynegpeaksbymuscle <- summary(negpeaks_bymuscle)$coefficients
+colnames(modelsummarynegpeaksbymuscle) <- c('Estimate', 'SE', 'df', 't-value', 'p-value')
+rownames(modelsummarynegpeaksbymuscle) <- c('Intercept', 'erector spinae', 'infraspinatus', 'pectoralis major', 'rectus abdominis')
+```
+
+We similarly modeled the variance of the magnitude in negative peaks in the amplitude envelope with muscle activity peaks (see right side of Figure S\@ref(fig:amplitudeEMGpeaks) for graphical results), and we similarly observed that such a model performed better than a base model predicting the overall mean, Change in Chi-Squared = `r printnum(negpeaks_bymuscle_comparison$Chisq[2])` (`r printnum(round(negpeaks_bymuscle_comparison[2,1]-negpeaks_bymuscle_comparison[1,1]))`), *p* `r paste0("= ", ifelse(negpeaks_bymuscle_comparison[2,8] > .001, round(negpeaks_bymuscle_comparison[2, 8], digits = 3), "< .001"))`. The model coefficients are given in Table S\@ref(tab:modelnegpeaksbymuscle). Further, as shown in Table S\@ref(tab:modelnegpeaksbymuscle) for the infraspinatus and the  pectoralis major, increases in peak EMG activity lead to statistically reliable increases in the magnitude of negative peaks in the amplitude envelope (with stronger effects), while the effects of erector spinae and the rectus abdominis do not reach statistical reliability.
+
+```{r modelnegpeaksbymuscle, echo=FALSE}
+knitr::kable(round(modelsummarynegpeaksbymuscle, 3),
+             caption = "Linear mixed regression model assessing the relation of peak muscle activity with the negative peak in the amplitude envelope. The negative peaks in the amplitude envelope are absolutized.") %>% 
+  kable_paper("hover", full_width = T)
+```
+
+### Research Question 3: Is postural muscle activity related to postural stability (change in center of mass)?{#analysis-3}
+
+```{r, echo = TRUE, warning = FALSE, message= FALSE, code_folding = "Show code modeling change in posture by muscle"}
+sub <- tr_wd[tr_wd$vocal_condition == 'vocalize' & tr_wd$trialindex>9, ]
+sub$max_COPc <- scale(sub$max_COPc)
+
+maxCOPc_bymuscle_nullmodel <- lmer(max_COPc ~ 1 + (1 | ppn), data = sub)
+maxCOPc_bymuscle <- lmer(max_COPc ~ max_erector + max_infra + max_pectoral + max_rectus + (1 | ppn), data = sub)
+maxCOPc_bymuscle_comparison <- anova(maxCOPc_bymuscle_nullmodel, maxCOPc_bymuscle)
+
+#get model summary and prepare table
+modelsummarymaxCOPcbymuscle <- summary(maxCOPc_bymuscle)$coefficients
+colnames(modelsummarymaxCOPcbymuscle) <- c('Estimate', 'SE', 'df', 't-value', 'p-value')
+rownames(modelsummarymaxCOPcbymuscle) <- c('Intercept', 'erector spinae', 'infraspinatus', 'pectoralis major', 'rectus abdominis')
+```
+
+Finally, we will assess which muscle activity can be related to changes in the center of pressure, which would directly confirm that gesture-speech biomechanics relate to postural stability [@pouwGestureSpeechPhysics2020]. Figure S\@ref(fig:correlationmusclesCOPc) shows the graphical results. We similarly performed a linear mixed regression (with participant as random intercept) with a model containing peak EMG activity for each muscle which was regressed on the peak in change in the center of pressure (COPc). We obtained that a base model predicting the over all mean of COPc was outperformed relative to said model, Change in Chi-Squared = `r printnum(maxCOPc_bymuscle_comparison$Chisq[2])` (`r printnum(round(maxCOPc_bymuscle_comparison[2,1]-maxCOPc_bymuscle_comparison[1,1]))`), *p* `r printnum(ifelse(maxCOPc_bymuscle_comparison[2,8] > .001, paste('=', maxCOPc_bymuscle_comparison[2,8]), '< .001'))`). Table S\@ref(tab:modelmaxCOPcbymuscle) provides the coefficient information. We find that only the postural muscles (rectus abdominis, erector spinae) indeed reliably predict the magnitude of changes in the center of pressure, while the pectoralis major and the infraspinatus do not reliably relate to the changes in ground reaction forces.
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, code_folding = "Show code producing the plot"}
+
+sub <- tr_wd[ tr_wd$trialindex>9,] #only real trials
+
+sub$max_pectoral <- scale(sub$max_pectoral)
+sub$max_infra    <- scale(sub$max_infra )
+sub$max_rectus   <- scale(sub$max_rectus)
+sub$max_erector  <- scale(sub$max_erector)
+sub <- subset(sub, movement_condition != 'no movement' & vocal_condition == 'vocalize')
+
+#correlation plot, to confirm role of postural muscle activations
+COPcbymuscle_infraspinatus <- ggplot(sub, aes(x = max_COPc)) +
+  geom_point(aes(y = max_infra, color = 'infraspinatus'), size = 0.2) +
+  geom_smooth(aes(y = max_infra, color = 'infraspinatus'), method='lm') +
+  ggtitle('Focal muscles: \n infraspinatus') +
+  scale_color_manual(values = colors_mus) +
+  ylab('max sEMG activity \n (normalized)') +
+  xlab('max change in \n center of pressure') +
+  theme_cowplot(12) +
+  theme(plot.title = element_text(hjust = 0.5, size = 5, color = col_infraspinatus)) +
+  theme(legend.position = "none") +
+  theme_cowplot() +
+  theme(legend.position = "none") #+facet_grid(.~movement_condition)
+
+COPcbymuscle_pectoralis <- ggplot(sub, aes(x = max_COPc)) +
+  geom_point(aes(y = max_pectoral, color = 'pectoralis major'), size=0.2) +
+  geom_smooth(aes(y = max_pectoral, color = 'pectoralis major'), method = 'lm') +
+  ggtitle('Focal muscles: \n pectoralis major') +
+  scale_color_manual(values = colors_mus) +
+  ylab('max sEMG activity \n (normalized)') +
+  xlab('max change in \n center of pressure') +
+  theme_cowplot(12) +
+  theme(plot.title = element_text(hjust = 0.5, size = 5, color = col_pectoralis)) +
+  theme(legend.position = "none") +
+  theme_cowplot() +
+  theme(legend.position = "none")  #+facet_grid(.~movement_condition)
+
+COPcbymuscle_rectus <- ggplot(sub, aes(x = max_COPc)) +
+  geom_point(aes(y = max_rectus, color = 'rectus abdominis'), size = 0.2) +
+  geom_smooth(aes(y = max_rectus, color = 'rectus abdominis'), method = 'lm') +
+  #ggtitle('Postural muscles') +
+  scale_color_manual(values = colors_mus) +
+  ylab('max sEMG activity \n (normalized)') +
+  ggtitle('Postural muscles: \n rectus abdominis') +
+  xlab('max change in \n center of pressure') +
+  theme_cowplot(12) +
+  theme(plot.title = element_text(hjust = 0.5, size = 5, color = col_rectus)) +
+  theme(legend.position = "none") +
+  theme_cowplot() +
+  theme(legend.position = "none")  #+facet_grid(.~movement_condition)
+
+
+COPcbymuscle_erector <- ggplot(sub, aes(x = max_COPc)) +
+  geom_point(aes(y = max_erector, color = 'erector spinae'), size = 0.2) +
+  geom_smooth(aes(y = max_erector, color = 'erector spinae'), method = 'lm') +
+  #ggtitle('Postural muscles') +
+  scale_color_manual(values = colors_mus) +
+  ylab('max sEMG activity \n (normalized)') +
+  ggtitle('Postural muscles: \n erector spinae') +
+  xlab('max change in \n center of pressure') +
+  theme_cowplot(12) +
+  theme(plot.title = element_text(hjust = 0.5, size = 5, color = col_erector)) +
+  theme(legend.position = "none") +
+  theme_cowplot() +
+  theme(legend.position = "none")  #+facet_grid(.~movement_condition)
+```
+
+<aside>
+<span style="color: red;"> The bottom-right plot (green) can be found in Figure 2, panel E.
+</span>
+</aside> 
+
+```{r correlationmusclesCOPc, echo=FALSE, message = FALSE, fig.cap = "Confirmation of postural muscle activation during changes in center of mass.", fig.width=6, fig.height=6}
+grid.arrange(COPcbymuscle_infraspinatus, COPcbymuscle_pectoralis, COPcbymuscle_rectus, COPcbymuscle_erector, nrow=2)
+```
+
+
+```{r modelmaxCOPcbymuscle, echo=FALSE}
+knitr::kable(round(modelsummarymaxCOPcbymuscle, 3),
+             caption = "Linear mixed regression model for predicting peak change in center of pressure based on muscle activity.") %>% 
+  kable_paper("hover", full_width = T)
+```
+
+## Other exploratory analyses
+
+### Synergies
+Along with the confirmatory analyses reported above that relate to questions posed in the pre-registration, we report on additional, exploratory analyses. Firstly we assess for possible context-dependent interrelationships of posture, muscle activity, and voice, by producing correlation matrices per movement condition (see Tables S\@ref(tab:corrinternalrotation), S\@ref(tab:correxternalrotation), S\@ref(tab:corrextension), S\@ref(tab:corrflexion)) which are represented in our synergies plot in Fig. 3 (panel F) in the main article. We see that producing different movements can recruit variable interrelationships between muscle, posture and voice. Striking to pick out is for example that we find a direct relationship between the degree of center of pressure change and the magnitude of positive amplitude peaks in the voice.
+
+```{r, echo = TRUE, layout="l-body-outset", code_folding = "Show code producing the correlation matrices and plots"}
+library(corx)
+#correlation between positive and negative peaks in amplitude and change in center of pressure
+correlation_pospeakCOPc_infraspinatus <- ggplot(sub, aes(x = max_COPc)) +
+  geom_point(aes(y = max_amp_c_around_move, color = 'infraspinatus'), size = 0.2) +
+  geom_smooth(aes(y = max_amp_c_around_move), method = 'lm') +
+  ggtitle('Focal muscles: \n infraspinatus') +
+  scale_color_manual(values = colors_mus) +
+  ylab('positive amplitude peaks') +
+  xlab('max. change in \n center of pressure') +
+  theme_cowplot(12) +
+  theme(plot.title = element_text(hjust = 0.5, size = 20, color = col_infraspinatus),
+        legend.position = "none") #+facet_grid(.~movement_condition)
+
+correlation_negpeakCOPc_infraspinatus <- ggplot(sub, aes(x = max_COPc)) +
+  geom_point(aes(y = min_amp_c_around_move, color = 'infraspinatus'), size = 0.2) +
+  geom_smooth(aes(y = min_amp_c_around_move), method = 'lm') +
+  ggtitle('Focal muscles: \n infraspinatus') +
+  scale_color_manual(values = colors_mus) +
+  ylab('negative amplitude peaks') +
+  xlab('max change in \n center of pressure') +
+  theme_cowplot(12) +
+  theme(plot.title = element_text(hjust = 0.5, size = 20, color = col_infraspinatus),
+        legend.position = "none") #+facet_grid(.~movement_condition)
+
+#internal rotation
+condition_internalrotation <- sub$movement_condition=='internal rotation'
+data_condition_internalrotation <- cbind.data.frame(sub$max_pectoral[condition_internalrotation], sub$max_infra[condition_internalrotation], sub$max_rectus[condition_internalrotation], sub$max_erector[condition_internalrotation], sub$max_COPc[condition_internalrotation], sub$max_amp_c_around_move[condition_internalrotation])
+
+#rename columns
+data_condition_internalrotation_rn <- data_condition_internalrotation %>% 
+  dplyr::rename(
+    `max. EMG pectoralis major` = `sub$max_pectoral[condition_internalrotation]`,
+    `max. EMG infraspinatus` = `sub$max_infra[condition_internalrotation]`,
+    `max. EMG rectus abdominis` = `sub$max_rectus[condition_internalrotation]`,
+    `max. EMG erector spinae` = `sub$max_erector[condition_internalrotation]`,
+    `max. change in center of pressure` = `sub$max_COPc[condition_internalrotation]`,
+    `max. positive amplitude vocalization` = `sub$max_amp_c_around_move[condition_internalrotation]`
+    )
+    
+corr_internalrotation <- data_condition_internalrotation_rn %>%
+  corx(triangle = "lower",
+       stars    = c(0.05, 0.01, 0.001),
+       note = "Internal rotation") 
+#knitr::kable(corr_internalrotation$apa)
+
+
+#external rotation
+condition_externalrotation <- sub$movement_condition=='external rotation'
+data_condition_externalrotation <- cbind.data.frame(sub$max_pectoral[condition_externalrotation], sub$max_infra[condition_externalrotation], sub$max_rectus[condition_externalrotation], sub$max_erector[condition_externalrotation], sub$max_COPc[condition_externalrotation], sub$max_amp_c_around_move[condition_externalrotation])
+
+#rename columns
+data_condition_externalrotation_rn <- data_condition_externalrotation %>% 
+  dplyr::rename(
+    `max. EMG pectoralis major` = `sub$max_pectoral[condition_externalrotation]`,
+    `max. EMG infraspinatus` = `sub$max_infra[condition_externalrotation]`,
+    `max. EMG rectus abdominis` = `sub$max_rectus[condition_externalrotation]`,
+    `max. EMG erector spinae` = `sub$max_erector[condition_externalrotation]`,
+    `max. change in center of pressure` = `sub$max_COPc[condition_externalrotation]`,
+    `max. positive amplitude vocalization` = `sub$max_amp_c_around_move[condition_externalrotation]`
+    )
+
+corr_externalrotation <- data_condition_externalrotation_rn %>%
+  corx(triangle = "lower",
+       stars    = c(0.05, 0.01, 0.001),
+       note = "External rotation") 
+#knitr::kable(corr_externalrotation$apa)
+
+
+#extension
+condition_extension <- sub$movement_condition=='extension'
+data_condition_extension <- cbind.data.frame(sub$max_pectoral[condition_extension], sub$max_infra[condition_extension], sub$max_rectus[condition_extension], sub$max_erector[condition_extension], sub$max_COPc[condition_extension], sub$max_amp_c_around_move[condition_extension])
+#cor.test(sub$max_rectus[condition_extension], sub$max_COPc[condition_extension])
+
+#rename columns
+data_condition_extension_rn <- data_condition_extension %>% 
+  dplyr::rename(
+    `max. EMG pectoralis major` = `sub$max_pectoral[condition_extension]`,
+    `max. EMG infraspinatus` = `sub$max_infra[condition_extension]`,
+    `max. EMG rectus abdominis` = `sub$max_rectus[condition_extension]`,
+    `max. EMG erector spinae` = `sub$max_erector[condition_extension]`,
+    `max. change in center of pressure` = `sub$max_COPc[condition_extension]`,
+    `max. positive amplitude vocalization` = `sub$max_amp_c_around_move[condition_extension]`
+    )
+
+corr_extension <- data_condition_extension_rn %>%
+  corx(triangle = "lower",
+       stars    = c(0.05, 0.01, 0.001),
+       note = "Extension")
+#knitr::kable(corr_extension$apa)
+
+
+#flexion
+condition_flexion <- sub$movement_condition=='flexion'
+data_condition_flexion <- cbind.data.frame(sub$max_pectoral[condition_flexion], sub$max_infra[condition_flexion], sub$max_rectus[condition_flexion], sub$max_erector[condition_flexion], sub$max_COPc[condition_flexion], sub$max_amp_c_around_move[condition_flexion])
+
+#rename columns
+data_condition_flexion_rn <- data_condition_flexion %>% 
+  dplyr::rename(
+    `max. EMG pectoralis major` = `sub$max_pectoral[condition_flexion]`,
+    `max. EMG infraspinatus` = `sub$max_infra[condition_flexion]`,
+    `max. EMG rectus abdominis` = `sub$max_rectus[condition_flexion]`,
+    `max. EMG erector spinae` = `sub$max_erector[condition_flexion]`,
+    `max. change in center of pressure` = `sub$max_COPc[condition_flexion]`,
+    `max. positive amplitude vocalization` = `sub$max_amp_c_around_move[condition_flexion]`
+    )
+
+corr_flexion <- data_condition_flexion_rn %>%
+  corx(triangle = "lower",
+       stars    = c(0.05, 0.01, 0.001),
+       note = "Flexion") 
+#knitr::kable(corr_flexion$apa)
+
+
+#very stable correlation of posture and internal rotation
+correlation_posture_internalrotation <- sub %>% 
+  dplyr::filter(movement_condition == "internal rotation") %>% 
+  ggplot(aes(x = max_COPc, y = max_amp_c_around_move)) +
+  geom_point(size = 3) +
+  geom_smooth(method = 'lm', color = 'red', size = 2) +
+  theme_cowplot() +
+  xlab('max change in \n center of pressure') +
+  ylab('positive\namplitude peaks')
+  
+# ggplot(sub[sub$movement_condition=='internal rotation', ], aes(x = max_COPc, y = max_amp_c_around_move))+geom_point(size = 3)+geom_smooth(method='lm', color = 'red', size = 2)+theme_cowplot()+xlab('max change in \n center of pressure')+ylab('positive\namplitude peaks')
+```
+
+
+Table S\@ref(tab:corrinternalrotation) shows the correlation matrix for the maximum peaks in EMG (row and columns 1-4), change in center of pressure (5) and maximum vocal amplitude (6).
+For this table, the data only include the **internal rotation** condition.
+
+<aside>
+<span style="color: red;"> Tables S\@ref(tab:corrinternalrotation), S\@ref(tab:correxternalrotation), S\@ref(tab:corrextension), S\@ref(tab:corrflexion) refer to to the synergies plot in Fig. 3 (F) in the paper.
+</span>
+</aside> 
+
+```{r corrinternalrotation, echo=FALSE}
+knitr::kable(corr_internalrotation$apa,
+             caption = "Correlation matrix for the internal rotation condition.") %>% 
+  kable_paper("hover", full_width = T)
+```
+
+Table S\@ref(tab:correxternalrotation) shows the correlation matrix for the maximum peaks in EMG (row and columns 1-4), change in center of pressure (5) and maximum vocal amplitude (6)
+For this table, the data only include the **external rotation** condition.
+
+```{r correxternalrotation, echo=FALSE}
+knitr::kable(corr_externalrotation$apa,
+             caption = "Correlation matrix for the external rotation condition.") %>% 
+  kable_paper("hover", full_width = T)
+```
+
+Table S\@ref(tab:corrextension) shows the correlation matrix for the maximum peaks in EMG (row and columns 1-4), change in center of pressure (5) and maximum vocal amplitude (6)
+For this table, the data only include the **extension** condition.
+
+```{r corrextension, echo=FALSE}
+knitr::kable(corr_extension$apa,
+             caption = "Correlation matrix for the extension condition.") %>% 
+  kable_paper("hover", full_width = T)
+```
+
+Table S\@ref(tab:corrflexion) shows the correlation matrix for the maximum peaks in EMG (row and columns 1-4), change in center of pressure (5) and maximum vocal amplitude (6)
+For this table, the data only include the **flexion** condition.
+
+```{r corrflexion, echo=FALSE}
+knitr::kable(corr_flexion$apa,
+             caption = "Correlation matrix for the flexion condition.") %>% 
+  kable_paper("hover", full_width = T)
+```
+
+```{r correlationpostureinternalrotation, echo=FALSE, message = FALSE, fig.cap = "Correlation of posture and amplitude for internal rotation.", fig.width=4}
+correlation_posture_internalrotation
+```
+<aside>
+<span style="color: red;"> This refers to Figure 2, panel G in the paper.
+</span>
+</aside> 
+
+Figure S\@ref(fig:correlationpostureinternalrotation) visualizes the positive correlation between posture (max. change in center of pressure) and vocalization amplitude (positive peaks in amplitude) found for the internal rotation condition in Table S\@ref(tab:corrinternalrotation).
+
+We finally explored the timing relationship of negative and positive peaks in the amplitude of the voice relative to the peak in speed of the hand. The density plot in Fig. S\@ref(fig:densitydistance) visualizes the temporal relationship between peak speed in movement and negative (left) and positive (right) peaks in the amplitude envelope, relative to the moment the moving hand reaches a peak in speed during the trial (i.e., t = 0, at peak speed of the wrist). Our findings corroborate our general observation that positive (rather than negative) peaks seem to be more robustly driven by gesture kinetics. In the timing relations obtained, the negative peaks that we observe are more variably distributed around peak speed, while for the positive peaks we see clear occurrences just around the movement onset (just before the peak speed at t = 0). This result, next to our more robust relationship between positive peaks and the muscele and posture signals, makes us conclude that in general the movements performed in our experiment are increasing subglottal pressures increasing the voice's amplitude.
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, code_folding = "Show code producing the plot"}
+sub <- tr_wd[ (tr_wd$trialindex>9) & (tr_wd$vocal_condition=='vocalize'),]
+#make new dataset for faceting the plot
+subpeak <- sub %>% 
+  pivot_longer(cols = c("max_amp_time_around_move", "min_amp_time_around_move"),
+               names_to = "peak_type",
+               values_to = "time")
+
+subpeak$peak_type <- recode(subpeak$peak_type,
+                            max_amp_time_around_move = "positive peak",
+                            min_amp_time_around_move = "negative peak")
+
+
+densitydistance <- subpeak %>% 
+  ggplot(aes(x = time, color = peak_type, linetype = movement_condition)) +
+  geom_density(size = 0.75) +
+  scale_linetype_manual(values = c("extension"="dotted", "external rotation"="dashed", "flexion"="dotdash", "internal rotation"="longdash", "no movement" = "solid")) +
+  scale_colour_manual(values = c("red", "blue"), guide = "none") +
+  xlab("Distance (in ms)") +
+  ylab("Density") +
+  labs(linetype="movement condition") +
+  theme_cowplot() +
+  theme(axis.text.x = element_text(angle = 45)) +
+  background_grid() +
+  facet_grid(~peak_type)
+
+```
+
+```{r densitydistance, echo=FALSE, message = FALSE, fig.cap = "Density plot showing temporal distance (in milliseconds) of positive and negative peaks in amplitude relative to peak speed in wrist movement.", fig.width = 10}
+plot_grid(densitydistance)
+```
+
+## Exploratory confounding analysis
+### Exploratory confounding analysis for the issue of causality
+Fig. S\@ref(fig:gamtimingplotgenerated) shows the amplitude envelope and EMG activity of an interval around the movement onset. Here we have modeled the by-participant normalized (z-scale) continuous trajectories of the amplitude envelope and all the other signals (EMG’s, posture) using Generalized Additive Modeling for each movement condition, setting participants as random intercept. To reduce over-estimation of any effects, we also accounted in the model for the autocorrelation of the residuals. Based on the predicted non-linear slopes that we generated for an interval of 600 ms we determine firstly the approximated onsets of the continuous measures. Onsets are determined as the peak in the 2nd derivative with respect to time of the GAM trajectory for a particular signal and condition. In general, we only consider the presence of onsets when the overall peak of the signal exceeds 0.75 x standard deviation from the mean (otherwise the timings reported are difficult to compare). For the figure we thus center our data based on the predicted onset that leads to the positive peak in the amplitude envelope. In this way we can isolate when the amplitude envelope starts to respond relative to the other signals. 
+Firstly, we determined from the GAM trajectories the estimated onset of the vocalization peak (i.e., the moment at which the amplitude starts to rise to peak envelope), as well as the on the onset of approximated negative peak, if present (i.e., the moment at which the amplitude starts to fall to the negative peak envelope). We learn from this that the minor negative peaks tend to precede the positive peak, suggesting a possible ‘anticipatory vocal adjustment’. Importantly, however in our supplemental materials we further show that the observed negative peaks do not happen as consistently as compared to the positive peaks (see Figure S9). This further corroborates the idea that positive peaks are directly related to physical impulses, while negative peaks are a type of correlated anticipatory/reactionary activity of the vocal system.
+
+Crucially, we find that in general before movement is observed, as indexed by the onset of the peak in wrist speed, there is a change in the center of pressure. Furthermore, muscle activity of postural muscles, such as the erector spinae during flexion conditions, can be observed even 108 milliseconds before the vocal onset. Even in cases where there are no clear activations of the postural muscles, e.g., as in the internal rotation, it can be seen that the focal muscles (e.g., pectoralis) start to activate 82 millisecond before the peak in vocal onset. Given that there is both postural and focal muscular activity that precedes the vocal onset slightly, it confirms that voice effects are not simply a cognitive anticipation of a physical impulse that actually happens later. 
+
+```{r generatinggams, echo = TRUE, results='hide', warning=FALSE, message = FALSE, code_folding = "Show code for generating the gams", warning = FALSE, message = FALSE}
+library(mgcv)
+library(itsadug)
+library(future)
+library(furrr)
+
+sub2 <- subset(tsl, vocal_condition != 'expire' & trial_number > 9)
+# Add this before model fitting
+sub2 <- sub2 %>%
+  arrange(pp, movement_condition, time_ms) %>%
+  group_by(pp, movement_condition) %>%
+  mutate(start.event = row_number() == 1) %>%
+  ungroup()
+
+#normalize the emgs and posture to get z-normalized ranges
+sub2$pectoralis_major  <- scale(sub2$pectoralis_major)
+sub2$infraspinatus     <- scale(sub2$infraspinatus)
+sub2$rectus_abdominis  <- scale(sub2$rectus_abdominis)
+sub2$erector_spinae    <- scale(sub2$erector_spinae)
+sub2$speed             <- scale(sub2$speed) 
+sub2$COPc              <- scale(sub2$COPc) 
+
+# Print debug info
+#print("Movement conditions in data:")
+#print(table(sub2$movement_condition))
+
+# First calculate rho value from initial model - modify the formula to be more explicit
+initial_model <- bam(env_z ~ s(movstart) + 
+                     s(movstart, by=factor(movement_condition)) + 
+                     factor(movement_condition) + s(pp, bs="re"), 
+                     data=sub2, method="REML")
+acf_resid_result <- acf_resid(initial_model,plot=FALSE)
+rho_value <- acf_resid_result[2]
+#print(paste("Estimated rho value:", rho_value))
+
+# Modified function with more explicit formula handling
+fit_unified_gam <- function(data, response_var) {
+  tryCatch({
+    # Ensure movement_condition is a factor
+    data$movement_condition <- factor(data$movement_condition)
+    
+    # Create the model formula with explicit factor() calls
+    formula <- as.formula(paste(response_var, 
+      "~ s(movstart) + s(movstart, by=factor(movement_condition)) + factor(movement_condition) + s(pp, bs='re')"))
+    
+    # Fit model with REML and autocorrelation
+    model <- bam(formula, data=data, method="REML",
+                 rho=rho_value,
+                 AR.start=data$start.event)
+    return(model)
+  }, error = function(e) {
+    message(sprintf("Error fitting model for %s: %s", response_var, e$message))
+    return(NULL)
+  })
+}
+
+# Function to get predictions
+safe_predict <- function(model, newdata) {
+  if (is.null(model)) {
+    return(data.frame(ts = rep(NA, nrow(newdata))))
+  }
+  
+  tryCatch({
+    pred <- predict(model, newdata, type="response")
+    return(data.frame(ts = pred))
+  }, error = function(e) {
+    message(sprintf("Prediction error: %s", e$message))
+    return(data.frame(ts = rep(NA, nrow(newdata))))
+  })
+}
+
+# Function to get predictions for a specific condition with error handling
+get_condition_predictions <- function(model, condition, tt_sim, ref_pp) {
+  newdata <- data.frame(
+    movstart = tt_sim,
+    movement_condition = condition,
+    pp = ref_pp
+  )
+  
+  pred_df <- safe_predict(model, newdata)
+  pred_df$time <- tt_sim
+  pred_df$movement_condition <- condition
+  return(pred_df)
+}
+
+# Fit unified models
+tt_sim <- seq(-500, 500, by=1)
+ref_pp <- sub2$pp[1]
+conditions <- unique(sub2$movement_condition)
+
+# Set up parallel processing
+plan(multisession, workers = parallel::detectCores() - 3) # Use all but three cores
+
+# List of response variables to model
+response_vars <- c(
+  "env_z", 
+  "env_z*-1", 
+  "pectoralis_major", 
+  "infraspinatus", 
+  "rectus_abdominis", 
+  "erector_spinae", 
+  "speed", 
+  "COPc"
+)
+
+# Fit all models (parrelelized)
+# Parallelized model fitting
+unified_models <- future_map(response_vars, ~ fit_unified_gam(sub2, .x))
+
+# Assign names to the resulting list
+names(unified_models) <- c(
+  "env", 
+  "env_neg", 
+  "pectoralis", 
+  "infraspinatus", 
+  "rectus", 
+  "erector", 
+  "speed", 
+  "copc"
+)
+
+# Fit all models (non-parralel)
+#unified_models <- list(
+#  env = fit_unified_gam(sub2, "env_z"),
+#  env_neg = fit_unified_gam(sub2, "env_z*-1"),
+#  pectoralis = fit_unified_gam(sub2, "pectoralis_major"),
+#  infraspinatus = fit_unified_gam(sub2, "infraspinatus"),
+#  rectus = fit_unified_gam(sub2, "rectus_abdominis"),
+#  erector = fit_unified_gam(sub2, "erector_spinae"),
+#  speed = fit_unified_gam(sub2, "speed"),
+#  copc = fit_unified_gam(sub2, "COPc")
+#)
+
+# Generate predictions with error handling
+generate_all_predictions <- function(model, conditions, tt_sim, ref_pp) {
+  preds <- lapply(conditions, function(cond) {
+    get_condition_predictions(model, cond, tt_sim, ref_pp)
+  })
+  result <- do.call(rbind, preds)
+  return(result)
+}
+
+# Generate predictions for each signal type
+predictions <- list()
+for (signal in names(unified_models)) {
+  predictions[[signal]] <- generate_all_predictions(
+    unified_models[[signal]], 
+    conditions, 
+    tt_sim, 
+    ref_pp
+  )
+}
+
+#  peak 2nd deriv
+safe_get_onset_peak <- function(df) {
+  tryCatch({
+    # Calculate second derivative
+    secder <- c(0, 0, diff(diff(df$ts)))
+    
+    # Find overall peak in original time series
+    peakoverall <- findpeaks(df$ts)
+    if (length(peakoverall) == 0 || nrow(peakoverall) == 0) return(NA)
+    
+    # Get the highest peak
+    peakoverall <- peakoverall[which.max(peakoverall[,1]),]
+    peakoverallmag <- peakoverall[3]  # Peak index (not magnitude)
+    peakoverallonset <- peakoverall[2]  # Onset index
+    
+    # Set acceleration to 0 for everything not between onset and peak
+    secder[-c(peakoverallonset:peakoverallmag)] <- 0
+    
+    # Find peaks in acceleration
+    peakaccfortime <- findpeaks(secder)
+    if (length(peakaccfortime) == 0 || nrow(peakaccfortime) == 0) return(NA)
+    
+    # Get highest acceleration peak
+    peakaccfortime <- peakaccfortime[which.max(peakaccfortime[,1]),]
+    
+    # Get time at peak acceleration
+    onset_peak <- df$time[peakaccfortime[2]] # peak of the acceleration
+    
+    return(onset_peak)
+    
+  }, error = function(e) {
+    message(sprintf("Peak detection error: %s", e$message))
+    return(NA)
+  })
+}
+
+
+# Get peaks with error handling
+get_peaks_by_condition <- function(predictions, safe_get_onset_peak) {
+  split_preds <- split(predictions, predictions$movement_condition)
+  peaks <- sapply(split_preds, safe_get_onset_peak)
+  return(peaks)
+}
+
+# Calculate peaks
+peaks <- lapply(predictions, function(pred) {
+  get_peaks_by_condition(pred, safe_get_onset_peak)
+})
+
+
+
+# Prepare data for plotting with error handling
+prepare_signal_data <- function(predictions, signal_type) {
+  if (is.null(predictions)) {
+    return(NULL)
+  }
+  df <- predictions
+  df$type <- signal_type
+  return(df)
+}
+
+# Prepare individual datasets
+env_slope <- prepare_signal_data(predictions$env, "env")
+emg_slope_pectoralis <- prepare_signal_data(predictions$pectoralis, "pectoralis major")
+emg_slope_infraspinatus <- prepare_signal_data(predictions$infraspinatus, "infraspinatus")
+emg_slope_rectus_abdominis <- prepare_signal_data(predictions$rectus, "rectus abdominis")
+emg_slope_erector_spinae <- prepare_signal_data(predictions$erector, "erector spinae")
+speed_slope <- prepare_signal_data(predictions$speed, "speed")
+slope_copc <- prepare_signal_data(predictions$copc, "copc")
+
+# Combine data safely
+emg_slope <- do.call(rbind, list(
+  emg_slope_pectoralis,
+  emg_slope_rectus_abdominis,
+  emg_slope_infraspinatus,
+  emg_slope_erector_spinae
+))
+
+# Final combination
+gamsandonsets <- do.call(rbind, list(env_slope, emg_slope, speed_slope, slope_copc))
+# Add onset times safely
+for(cond in conditions) {
+  mask <- gamsandonsets$movement_condition == cond
+  if(any(mask)) {
+    gamsandonsets$onset_env[mask] <- peaks$env[cond]
+    gamsandonsets$onset_envneg[mask] <- peaks$env_neg[cond]
+    gamsandonsets$onset_pectoralis[mask] <- peaks$pectoralis[cond]
+    gamsandonsets$onset_infraspinatus[mask] <- peaks$infraspinatus[cond]
+    gamsandonsets$onset_rectus_abdominis[mask] <- peaks$rectus[cond]
+    gamsandonsets$onset_erector_spinae[mask] <- peaks$erector[cond]
+    gamsandonsets$onset_speed[mask] <- peaks$speed[cond]
+    gamsandonsets$onset_copc[mask] <- peaks$copc[cond]
+  }
+}
+
+# Replace numeric(0) in all relevant columns with 0
+cols_to_check <- c("onset_env", "onset_envneg", "onset_pectoralis", 
+                   "onset_infraspinatus", "onset_rectus_abdominis", 
+                   "onset_erector_spinae", "onset_speed", "onset_copc")
+
+```
+
+```{r gamtimingplotting, echo = TRUE, message = FALSE, warning = FALSE, code_folding = "Show code producing the gam plot and timing estimates", fig.cap="As exemplified in each black vertical line shows the onset towards a negative peak (dashed vertical line) and the onset towards a positive peak (solid vertical line) in the amplitude envelope, which is projected over each subplot that belong to each modality. For the other modalities a solid vertical thick line is shown for the onset towards a positive peak (e.g., onset towards a positive peak in center of pressure in grey. It can be seen that the moment of first onset of the peak change in pressure coincides closely to the moment of onset towards the positive peak in vocalization. We also summarize the timings of these onsets relative to the positive peak in the amplitude envelope, showing for example that in the flexion condition the erector spinae activates 103 milliseconds before the onset of the positive peak in the amplitude. In the internal rotation condition, the pectoralis major activates earliest, with 86 milliseconds lead to the estimated onset of the amplitude envelope to its positive peak.", fig.width=14, fig.height=21}
+library(tidyr)
+
+subs <- gamsandonsets
+
+# normalize trajectoiries within type
+#subs$ts <- ave(subs$ts, subs$type, FUN = function(x) (x - mean(x))/sd(x))
+col_env          <-  'purple'
+col_pectoralis    <- '#e7298a'
+col_infraspinatus <- '#7570b3' 
+col_rectus        <- '#d95f02'
+col_erector       <- '#1b9e77'
+col_copc          <- '#666666'
+col_speed         <- '#e6ab02'
+colors_mus <- c("pectoralis major" = col_pectoralis, "infraspinatus" = col_infraspinatus, "rectus abdominis" = col_rectus, "erector spinae" = col_erector, "COPc" = col_copc, "speed" = col_speed) 
+
+# normalize the ts
+subs$ts <- ave(subs$ts, subs$type, FUN = function(x) (x - mean(x))/sd(x))
+
+# center everything by the onset of the positive peak in envelope
+originalenv <- subs$onset_env
+subs$time <- subs$time-subs$onset_env
+subs$onset_env <- subs$onset_env-originalenv
+subs$onset_envneg <- subs$onset_envneg-originalenv
+subs$onset_pectoralis <- subs$onset_pectoralis-originalenv
+subs$onset_infraspinatus <- subs$onset_infraspinatus-originalenv
+subs$onset_rectus_abdominis <- subs$onset_rectus_abdominis-originalenv
+subs$onset_erector_spinae <- subs$onset_erector_spinae-originalenv
+subs$onset_copc <- subs$onset_copc-originalenv
+subs$onset_speed <- subs$onset_speed-originalenv
+
+  # only keep onset when there is a value that is higher than 0.5 std away
+threshold <- 0.50
+subs$to_ignoreenv <- subs$to_ignoreenvneg <- subs$to_ignorepector <- subs$to_ignoreinfra <- subs$to_ignorerectus <- subs$to_ignorecopc <- subs$to_ignorespeed <- 1
+
+subs$to_ignoreenv <- rep(ave(subs$ts[subs$type=='env'], subs$movement_condition[subs$type=='env'],FUN = function(x) (max(x,na.rm=TRUE))>threshold), by= length(unique(subs$type)))
+
+subs$to_ignoreenvneg <- rep(ave(subs$ts[subs$type=='env'], subs$movement_condition[subs$type=='env'],FUN = function(x) (max(x*-1,na.rm=TRUE))>threshold), by= length(unique(subs$type)))
+
+subs$to_ignorepector <- rep(ave(subs$ts[subs$type=='pectoralis major'], subs$movement_condition[subs$type=='pectoralis major'],FUN = function(x) (max(x,na.rm=TRUE))>threshold), by= length(unique(subs$type)))
+
+subs$to_ignoreinfra <- rep(ave(subs$ts[subs$type=='infraspinatus'], subs$movement_condition[subs$type=='infraspinatus'],FUN = function(x) (max(x,na.rm=TRUE))>threshold), by= length(unique(subs$type)))
+
+subs$to_ignorerectus <- rep(ave(subs$ts[subs$type=='rectus abdominis'], subs$movement_condition[subs$type=='rectus abdominis'],FUN = function(x) (max(x,na.rm=TRUE))>threshold), by= length(unique(subs$type)))
+
+subs$to_ignoreerect <- rep(ave(subs$ts[subs$type=='erector spinae'], subs$movement_condition[subs$type=='erector spinae'],FUN = function(x) (max(x,na.rm=TRUE))>threshold), by= length(unique(subs$type)))
+
+subs$to_ignorecopc <- rep(ave(subs$ts[subs$type=='copc'], subs$movement_condition[subs$type=='copc'],FUN = function(x) (max(x,na.rm=TRUE))>threshold), by= length(unique(subs$type)))
+
+subs$to_ignorespeed <- rep(ave(subs$ts[subs$type=='speed'], subs$movement_condition[subs$type=='speed'],FUN = function(x) (max(x,na.rm=TRUE))>threshold), by= length(unique(subs$type)))
+
+# now set all onset to NA if ignore ==1
+#subs$onset_env <- ifelse(subs$to_ignoreenv==0, NA, subs$onset_env)
+subs$onset_envneg <- ifelse(subs$to_ignoreenvneg==0, NA, subs$onset_envneg)
+subs$onset_pectoralis <- ifelse(subs$to_ignorepector==0, NA, subs$onset_pectoralis)
+subs$onset_infraspinatus <- ifelse(subs$to_ignoreinfra==0, NA, subs$onset_infraspinatus)
+subs$onset_rectus_abdominis <- ifelse(subs$to_ignorerectus==0, NA, subs$onset_rectus_abdominis)
+subs$onset_erector_spinae <- ifelse(subs$to_ignoreerect==0, NA, subs$onset_erector_spinae)
+subs$onset_copc <- ifelse(subs$to_ignorecopc==0, NA==0, subs$onset_copc)
+subs$onset_speed <- ifelse(subs$to_ignorespeed==0, NA==0, subs$onset_speed)
+
+# plot all predictions in one plot gamsandonsets
+a <- ggplot(subs[subs$type=='env',], aes(x = time, y = ts)) +
+    geom_line(color =col_env)+facet_grid(.~movement_condition) +
+    # add verticsl line
+    geom_vline(aes(xintercept = onset_env), linetype = 'solid', color ='black') +
+    geom_vline(aes(xintercept = onset_envneg), linetype = 'dashed', color ='black')+
+    theme_cowplot(12)+ylab('amplitude envelope \n (normalized)')+xlab("")+ggtitle('Amplitude envelope')+xlim(-250,400)
+
+# plot all predictions for 
+emgsmuscle <- c('pectoralis major', 'rectus abdominis', 'infraspinatus', 'erector spinae')
+# plot all predictions in one plot gamsandonsets
+b <- ggplot(subs[subs$type%in%emgsmuscle,], aes(x = time, y = ts, group = type)) +
+    geom_line(aes(color =type))+facet_grid(.~movement_condition) +
+    # add verticsl line
+    geom_vline(aes(xintercept = onset_pectoralis), linetype = 'solid', color =col_pectoralis, size= 1.5, alpha=.75) +
+    geom_vline(aes(xintercept = onset_infraspinatus), linetype = 'solid', color =col_infraspinatus, size= 1.5, alpha=.75) +
+    geom_vline(aes(xintercept = onset_rectus_abdominis), linetype = 'solid', color =col_rectus, size= 1.5, alpha=.75) +
+    geom_vline(aes(xintercept = onset_erector_spinae), linetype = 'solid', color =col_erector, size= 1.5, alpha=.75) +
+    geom_vline(aes(xintercept = onset_env), linetype = 'solid', color ='black') +
+    geom_vline(aes(xintercept = onset_envneg), linetype = 'dashed', color ='black')+
+    scale_color_manual(values = colors_mus) +
+    #remove legend
+    theme_cowplot(12)+theme(legend.position="top")+ylab('EMG \n (normalized)')+xlab("")+ggtitle('EMG')+xlim(-250,400)
+    
+# plot for speed
+c <- ggplot(subs[subs$type=='speed',], aes(x = time, y = ts)) +
+    geom_line(color =col_speed)+facet_grid(.~movement_condition) +
+    # add verticsl line
+    geom_vline(aes(xintercept = onset_speed), linetype = 'solid', color =col_speed, size= 1.5, alpha=.75) +
+    geom_vline(aes(xintercept = onset_env), linetype = 'solid', color ='black') +
+    geom_vline(aes(xintercept = onset_envneg), linetype = 'dashed', color ='black')+
+    theme_cowplot(12)+ylab('speed \n (normalized)')+xlab("")+ggtitle('Wrist speed')+xlim(-250,400)
+
+# plot ground reaction
+d <- ggplot(subs[subs$type=='copc',], aes(x = time, y = ts)) +
+    geom_line(color =col_copc)+facet_grid(.~movement_condition) +
+    # add verticsl line
+    geom_vline(aes(xintercept = onset_copc), linetype = 'solid', color =col_copc, size= 1.5, alpha=.75) +
+    geom_vline(aes(xintercept = onset_env), linetype = 'solid', color ='black') +
+    geom_vline(aes(xintercept = onset_envneg), linetype = 'dashed', color ='black')+
+    theme_cowplot(12)+ylab('change in center of pressure \n (normalized)')+xlab('time (ms)')+ggtitle('Change in center of pressure')+xlim(-250,400)
+
+# Create a table with all timings
+subsmin <- subs[subs$time==0 & subs$type=='env', ]
+
+timing_table <- subsmin %>%
+  group_by(movement_condition) %>%
+  summarise(
+    `onset change COPc` = onset_copc,
+    `onset rectus abdominis` = onset_rectus_abdominis,
+    `onset pectoralis major` = onset_pectoralis,
+    `onset infraspinatus` = onset_infraspinatus,
+    `onset erector spinae` = onset_erector_spinae,
+    `onset speed` = onset_speed,
+    `onset pos peak envelope` = onset_env,
+    `onset neg peak envelope` = onset_envneg
+  ) %>%
+  gather(key = "measure", value = "timing", -movement_condition) %>%
+  arrange(movement_condition, timing)
+
+# reorder the table based on order variables
+timing_table$measure <- factor(timing_table$measure, levels = c("onset speed", "onset rectus abdominis", "onset pectoralis major", "onset infraspinatus", "onset erector spinae", "onset change COPc", "onset pos peak envelope", "onset neg peak envelope"))
+
+# Create a table plot
+library(scales)
+
+# First, let's create a custom rescaling function
+custom_rescale <- function(x) {
+  pos <- x[x >= 0]
+  neg <- x[x < 0]
+  pos_rescaled <- rescale(pos, to = c(0, 1))
+  neg_rescaled <- rescale(neg, to = c(-1, 0))
+  result <- x
+  result[x >= 0] <- pos_rescaled
+  result[x < 0] <- neg_rescaled
+  return(result)
+}
+
+  #timing 2 is scaled from -1 to 1
+timing_table$timing2 <-NA
+timing_table$timing2[!is.na(timing_table$timing)] <- custom_rescale(timing_table$timing[!is.na(timing_table$timing)])
+e <- ggplot(timing_table, aes(y = measure, x = movement_condition)) +
+  geom_tile(aes(fill = timing2), color = "white") +
+  geom_text(aes(label = round(timing, 2)), size = 5) +
+  scale_fill_gradient2(low = "lightblue", high = "darkred", mid = "white", 
+                       midpoint = 0, limit = c(-1,1), space = "Lab", 
+                       name="Timing") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+  ggtitle("Table of Estimated Timings")+theme_cowplot(12)+ theme(legend.position="none")+
+  xlab('Milliseconds relative to the onset of the positive peak in the envelope')+
+  # order y axis according to levels
+  scale_y_discrete(limits = levels(timing_table$measure))
+  # increase the font size of the numbers in the table
+
+```
+
+```{r gamtimingplotgenerated, echo= FALSE, message =FALSE, warning =FALSE, fig.cap = "Smoothed conditional means for vocalization and muscle activity (with gam). Smoothed conditional means over time, where time is centered at 0 at the movement onset (as determined by the motion tracking of the wrist). The smoothed conditional means are generated by fitting non-linear smooths using generalized additive models in R-package ggplot2. It can be seen that especially for the extension movement there are clear anticipatory postural muscle activations [@aruinDirectionalSpecificityPostural1995], of the rectus abdominis before the movement onset, which is then followed by postural adjustments of the erector spinae. For the flexion condition, this activation pattern is reversed as one would expect given that the impulse vector should be directed in the opposite direction.", fig.width = 8, fig.height=7}
+# Modify the final plot_grid to include the new table
+plot_grid(a, b, c, d, e, 
+          ncol = 1, 
+          align = 'v',
+          axis = 'l',
+          rel_heights = c(2, 3, 2, 2, 3))  # Adjust rel_heights as needed
+```
+
+<aside>
+<span style="color: red;"> This refers to Figure 5 in the paper. Note in the current Rmarkdown we retain the rectus abdominis. As can be seen the z-normalization inflates the noise of the rectus abdominis as there is not a lot of variability across conditions.
+</span>
+</aside> 
+
+### Exploratory confounding analysis for subtle differential effects on vocalization
+From our confirmatory peak analyses we concluded that there were no reliable differences between the different movement conditions in terms of affecting the magnitude of the positive peak in vocalization. Now that we have modeled the trajectories with GAMs, we can perform a statistical test for whether the different movement-only conditions affect the vocalization amplitude envelopes in terms of their trajectory, rather than simply differing in the magnitude of the peak of the trajectory. We determine the trajectory along an interval of -500ms to +500ms relative to the onset of the arm movement (time = 0 when the movement initiates). The GAM analysis here is much more powerful as we take in millions of time series observations (as compared to the by-trial peak generation).
+
+
+
+```{r movement_trajectory_comparison, echo = TRUE, warning = FALSE, message = FALSE, code_folding = "Show code comparing movement trajectories per movement-only condition"}
+sub2 <- subset(tsl, vocal_condition != 'expire' & trial_number > 9 & movement_condition!="no_movement")
+# Add this before model fitting
+sub2 <- sub2 %>%
+  arrange(pp, movement_condition, time_ms) %>%
+  group_by(pp, movement_condition) %>%
+  mutate(start.event = row_number() == 1) %>%
+  ungroup()
+
+sub2$movement_condition <- as.factor(sub2$movement_condition)
+
+# same as before
+tt_sim <- seq(-500, 500, by=1)
+
+#First calculate autocorrelation
+initial_model <- bam(env_z ~ s(movstart) + 
+                     s(movstart, by=movement_condition, id=1) + 
+                     movement_condition + s(pp, bs="re"), 
+                     data=sub2, method="REML")
+acf_resid_result <- acf_resid(initial_model, plot=FALSE)
+rho_value <- acf_resid_result[2]
+print(paste("Estimated rho value:", round(rho_value, 4)))
+
+# Fit the unified model for envelope trajectories with autocorrelation
+env_unified <- bam(env_z ~ s(movstart) + 
+                   s(movstart, by=movement_condition, id=1) + 
+                   movement_condition + s(pp, bs="re"), 
+                   data=sub2, method="REML",
+                   rho=rho_value,
+                   AR.start=sub2$start.event)
+
+# Compare against simpler model without movement-specific smooths
+env_null <- bam(env_z ~ s(movstart) + movement_condition + s(pp, bs="re"),
+                data=sub2, method="REML",
+                rho=rho_value,
+                AR.start=sub2$start.event)
+
+# Test significance of movement-specific trajectories
+model_comparison <- anova(env_null, env_unified, test="F")
+
+# Get detailed comparison of smooth terms
+smooth_comparison <- anova.gam(env_unified)
+
+# Compare difference between conditions using ordered factor
+sub2$movement_condition <- factor(sub2$movement_condition, 
+                                levels=c("extension",
+                                       "flexion",
+                                       "external rotation",
+                                       "internal rotation"))
+
+# Format results
+model_stats <- data.frame(
+  Comparison = "Movement trajectory effects",
+  F_stat = round(model_comparison$F[2], 2),
+  df = paste(model_comparison$`Resid. Df`[1], model_comparison$`Resid. Df`[2], sep=","),
+  p_value = format.pval(model_comparison$`Pr(>F)`[2], digits=4)
+)
+
+smooth_stats <- data.frame(
+    Term = rownames(smooth_comparison$s.table),
+    edf = round(smooth_comparison$s.table[,"edf"], 2),
+    Ref_df = round(smooth_comparison$s.table[,"Ref.df"], 2),
+    F_stat = round(smooth_comparison$s.table[,"F"], 2),
+    p_value = format.pval(smooth_comparison$s.table[,"p-value"], digits=4)
+)
+
+```
+
+The GAM model with an autoregressive component, with participants as random intercepts and movement-only conditions was statistically reliable, F (`r model_stats$df`) = `r model_stats$F_stat`, p = `r model_stats$p_value`. The smooth term statistics in table S\@ref(tab:vocaltrajectorysmoothstable)) show that there was a general nonlinearity to the amplitude envelope that characterized all movement-only conditions, as evidenced by the statistically reliable smooth for time. Additionally, the flexion, external rotation, and internal rotation, had each an movement-specific pattern that was statistically reliable. This means that there are statistically robust deviations in the shaping of the amplitude envelope trajectories for different types of movement (except for the extension condition).
+
+```{r vocaltrajectorysmoothstable, echo=FALSE, message=FALSE, warning=FALSE}
+knitr::kable(smooth_stats,
+             caption = "Tests of smooth terms in the model",
+             align = c('l', 'r', 'r')) %>%
+  kable_styling(bootstrap_options = "striped", full_width = FALSE)
+```
+<aside>
+<span style="color: red;"> This refers to Table 1 in the paper.
+</span>
+</aside> 
+
+```{r comparing trajectories, message=FALSE, warning=FALSE, code_folding = "Show code for GAM envelope analysis"}
+# Get the model for envelope
+env_model <- unified_models$env
+
+# Use your existing get_condition_predictions function
+movement_conditions <- c("extension_stop", "external_rotation_stop", 
+                        "flexion_stop", "internal_rotation_stop")
+
+preds_list <- lapply(movement_conditions, function(cond) {
+    pred <- get_condition_predictions(env_unified , cond, tt_sim, ref_pp)
+    # Add movstart and expand pp to match length of predictions
+    pred$movstart <- pred$time
+    pred$pp <- rep(ref_pp, nrow(pred))
+    # Get SE for this prediction
+    pred_se <- predict(env_model, newdata=pred, type="response", se.fit=TRUE)
+    pred$se <- pred_se$se.fit
+    return(pred)
+})
+
+# Combine predictions
+plot_df <- do.call(rbind, preds_list)
+plot_df$movement_condition <- factor(plot_df$movement_condition)
+
+# Plot all slopes on one plot with confidence intervals
+p_overlay <- ggplot(plot_df, aes(x=time, y=ts, color=movement_condition)) +
+    geom_ribbon(aes(ymin=ts-1.96*se, ymax=ts+1.96*se, fill=movement_condition), alpha=0.1) +
+    geom_line() +
+    scale_color_brewer(palette="Set1") +
+    scale_fill_brewer(palette="Set1") +
+    theme_minimal() +
+    labs(x="Time (ms)", y="Amplitude",
+         title="Movement condition effects",
+         subtitle="With 95% confidence intervals") +
+    theme(legend.position="bottom",
+          legend.title=element_blank())
+```
+
+```{r plotsmooths, echo=FALSE, message=FALSE, warning=FALSE, fig.cap="GAM-approximated vocal trajectories for movement-only conditions with confidence intervals"}
+p_overlay
+```
+<aside>
+<span style="color: red;"> This refers to Figure 6 in the paper.
+</span>
+</aside> 
+
+### Exploratory confounding analysis: Muscle activity for the different movement and vocalization conditions
+
+
+```{r simpletestofeffectsofvocal, code_folding = "Show code for assessing effects of voicing vs. expiration for the movement-only conditions"}
+sub <- tr_wd[ tr_wd$trialindex>9 & tr_wd$movement_condition != 'no movement',] #only real trials
+
+  # perform a simple t-test movement no movement
+    # pectoralis
+nullmodel <- lmer(max_pectoral ~ movement_condition+weight_condition  + (1 | ppn), data = sub)
+modelmov <- lmer(max_pectoral ~ movement_condition+weight_condition+vocal_condition + (1 | ppn), data = sub)
+modcompare_pectoralis <- anova(nullmodel, modelmov)
+
+  # infra
+nullmodel <- lmer(max_infra ~ movement_condition+weight_condition + (1 | ppn), data = sub)
+modelmov <- lmer(max_infra ~ movement_condition+weight_condition+vocal_condition + (1 | ppn), data = sub)
+modcompare_infra <- anova(nullmodel, modelmov)
+
+  # rectus
+nullmodel <- lmer(max_rectus ~ movement_condition+weight_condition + (1 | ppn), data = sub)
+modelmov <- lmer(max_rectus ~ movement_condition+weight_condition+vocal_condition + (1 | ppn), data = sub)
+modcompare_rectus <- anova(nullmodel, modelmov)
+
+  # erector
+nullmodel <- lmer(max_erector ~ movement_condition+weight_condition + (1 | ppn), data = sub)
+modelmov <- lmer(max_erector ~ movement_condition+weight_condition+vocal_condition + (1 | ppn), data = sub)
+modcompare_erector <- anova(nullmodel, modelmov)
+
+# put in a table
+modcomparevoc_ <- data.frame(Muscle = c('Vocalize vs. expire (pectoralis major)', 'vocalize vs. expire (infraspinatus)', 'vocalize vs. expire (rectus abdominis)', 'vocalize vs. expire (erector spinae)'), 
+                            Chi2 = round(c(modcompare_pectoralis$'Chisq'[2], modcompare_infra$'Chisq'[2], modcompare_rectus$'Chisq'[2], modcompare_erector$'Chisq'[2]), 4),
+                            df = c(modcompare_pectoralis$'Df'[2], modcompare_infra$'Df'[2], modcompare_rectus$'Df'[2], modcompare_erector$'Df'[2]),
+                            pvalue = round(c(modcompare_pectoralis$'Pr(>Chisq)'[2], modcompare_infra$'Pr(>Chisq)'[2], modcompare_rectus$'Pr(>Chisq)'[2], modcompare_erector$'Pr(>Chisq)'[2]), 4))
+
+```
+
+In this section we further tests for whether muscle activity was predicted by whether movements were performed under expiration versus vocalizing (over and above the different movement and weight conditions). Activity in the pectoralis major, the infraspinatus, and the rectus abdominis, were not reliably better predicted by vocal condition, over and above weight and movement condition effects. There was however an overall increased muscle activity over and above weight and movement conditions in the erector spinae when vocalizing (see table S\@ref(tab:simpletestofeffectsofvocalgenerate)). Figure S\@ref(fig:movementpeakmuscleactivity1) provides a descriptive overview of the different muscle activation levels per vocal and movement condition, and table S\@ref(vocalexpiretablegeneration) provides a comprehensive numerical overview of the contrast of vocalization vs. expiration.
+
+```{r simpletestofeffectsofvocalgenerate, echo=FALSE, warning=FALSE, message= FALSE}
+knitr::kable(modcomparevoc_,
+             caption = "Muscle activity predicted by presence vocalization versus expiration for the movement only conditions (testing against a model accounting for weight and movement conditions).") %>% 
+  kable_paper("hover", full_width = T)
+```
+
+
+```{r simpletestofeffectsofvocalfollowup, code_folding = "Show code for assessing effects of voicing vs. expiration regardless of movement"}
+sub <- tr_wd[tr_wd$trialindex > 9,] #only real trials
+sub$movement_condition <- ifelse(sub$movement_condition=="no movement", "movement", "no movement")
+
+# Base model with movement and weight only
+base_model <- lmer(max_erector ~ movement_condition + weight_condition + (1 | ppn), 
+                 data = sub)
+
+# Model adding vocal condition
+vocal_model <- lmer(max_erector ~ movement_condition + weight_condition + vocal_condition + (1 | ppn), 
+                   data = sub)
+
+# Model with interaction
+interaction_model <- lmer(max_erector ~ movement_condition + weight_condition + vocal_condition + 
+                         movement_condition:vocal_condition + (1 | ppn), 
+                         data = sub)
+
+# Model comparisons
+vocal_comparison <- anova(base_model, vocal_model)
+interaction_comparison <- anova(vocal_model, interaction_model)
+
+# Extract coefficient for vocalization effect
+vocal_effect <- summary(vocal_model)$coefficients["vocal_conditionvocalize", ]
+
+
+sub <- tr_wd[tr_wd$trialindex > 9,] #only real trials
+sub$movement_condition <- ifelse(sub$movement_condition=="no movement", "movement", "no movement")
+
+# Base model with movement and weight only
+base_model <- lmer(max_erector ~ movement_condition + weight_condition + (1 | ppn), 
+                 data = sub)
+
+# Model adding vocal condition
+vocal_model <- lmer(max_erector ~ movement_condition + weight_condition + vocal_condition + (1 | ppn), 
+                   data = sub)
+
+# Model with interaction
+interaction_model <- lmer(max_erector ~ movement_condition + weight_condition + vocal_condition + 
+                         movement_condition:vocal_condition + (1 | ppn), 
+                         data = sub)
+
+# Model comparisons
+vocal_comparison <- anova(base_model, vocal_model)
+interaction_comparison <- anova(vocal_model, interaction_model)
+
+# Extract coefficient for vocalization effect
+vocal_effect <- summary(vocal_model)$coefficients["vocal_conditionvocalize", ]
+# Create combined table of model comparisons
+model_comparisons <- data.frame(
+  Model = c("Adding vocal condition over an above weight and movement presence", "Adding interaction between movement presence and vocal condition"),
+  Chi2 = round(c(vocal_comparison$'Chisq'[2], interaction_comparison$'Chisq'[2]), 3),
+  df = c(vocal_comparison$'Df'[2], interaction_comparison$'Df'[2]),
+  p_value = round(c(vocal_comparison$'Pr(>Chisq)'[2], interaction_comparison$'Pr(>Chisq)'[2]), 4)
+)
+
+```
+
+Importantly, it is possible that vocalizing recruits more muscle activity in general, including the no movement condition, because the subglottal pressures are higher for vocalization due to increased air resistance of the adducted vocal folds as compared to the partially closed lips for controlled expiration. To test an overall increased erector spinae activity, rather than a differentiated increase for movement trials only, we firstly assessed whether a model predicting erector spinae activity for all movement conditions (including the no movement condition), over and above movement presence and weight conditions, was a better model than a comparison model with only movement and weight condition. This model increased explained variance, χ2(`r vocal_comparison$'Df'[2]`) = `r round(vocal_comparison$'Chisq'[2], 2)`, p = `r round(vocal_comparison$'Pr(>Chisq)'[2], 4)`, and indeed in general there was an overall increased effect of vocalization on erector spinae activity, b = `r round(vocal_effect["Estimate"], 3)`, t(`r round(vocal_effect["df"], 3)`) = `r round(vocal_effect["t value"], 3)`, p = `r round(vocal_effect["Pr(>|t|)"], 4)`. Since another model with an added interaction term of movement presence and vocal condition did not reliably improve relative to a model with simple effects, χ2(`r interaction_comparison$'Df'[2]`) = `r round(interaction_comparison$'Chisq'[2], 3)`, p = `r round(interaction_comparison$'Pr(>Chisq)'[2], 4)`, we conclude that in general vocalizations recruits higher erector spinae activity than expiration in these tasks. This thereby refutes the possibility that there is increased muscle activation in anticipation of movement perturbing the voice and thereby appearing as if arm-movement directly affects the voice. After all, in the no movement condition there is also a higher erector spinae recruitment when vocalizing vs. expiring. 
+
+```{r codeforexpirevocalize, echo = TRUE, evaluate = FALSE, message = FALSE, warning = FALSE, code_folding = "Show code producing the descriptive plot for expiration vs. vocalization"}
+library(magick)
+# R1 added detailed info
+##### This the raw code for the plot
+    #we have however, done after editing to prettify and mark the plot
+sub <- tr_wd[ tr_wd$trialindex>9 ,] #only real trials
+
+sub$max_pectoral <- scale(sub$max_pectoral, center = FALSE)[,1]
+sub$max_infra    <- scale(sub$max_infra, center = FALSE )[,1]
+sub$max_rectus   <- scale(sub$max_rectus, center = FALSE)[,1]
+sub$max_erector  <- scale(sub$max_erector, center = FALSE)[,1]
+sub$max_COPc     <- scale(sub$max_COPc, center = FALSE)[,1]
+sub$peak_speed   <- scale(sub$peak_speed, center = FALSE)[,1]
+sub$peak_acc     <- scale(sub$peak_acc, center = FALSE)[,1]
+
+# reorder movement condition reversing the order
+sub$movement_condition <- factor(sub$movement_condition, levels = rev(levels(sub$movement_condition)))
+
+#reorder values
+peaks_pectoralis_bymovement <- ggplot(sub, aes(x = movement_condition, y=max_pectoral,group=interaction(vocal_condition, movement_condition))) +
+  geom_quasirandom(aes(color = vocal_condition, shape = weight_condition),alpha = 0.4, dodge.width = 0.8, cex = 1) +
+  geom_boxplot(aes(size= weight_condition),alpha = 0) +
+  theme_cowplot(12) +
+  theme(axis.text.x = element_text(angle = 0, size = 7)) +
+  xlab("movement condition") +
+  ggtitle('Pectoralis major (internal rotator)') +
+  ylab('max sEMG activity \n (normalized)') +
+  theme(plot.title = element_text(hjust = 0.5, size = 10, color = col_pectoralis)) +
+  scale_colour_brewer(palette = 'Set2') +
+  theme(legend.title=element_blank()) +
+  theme(legend.position = c(0.8, 0.8), legend.key.size = unit(.2, 'cm')) +
+  ylim(-0.1, 5) +
+  geom_hline(yintercept=median(sub$max_pectoral[sub$movement_condition == 'no movement']), linetype='dashed') +
+  coord_flip()+scale_size_manual(values=c(0.1, 0.2))
+
+peaks_infraspinatus_bymovement <- ggplot(sub, aes(x = movement_condition, y=max_infra,group=interaction(vocal_condition, movement_condition))) +
+  geom_quasirandom(aes(color = vocal_condition, shape = weight_condition), alpha = 0.4, dodge.width = 0.8, cex = 1) +
+  geom_boxplot(aes(size= weight_condition), alpha = 0) +
+  theme_cowplot(12) +
+  theme(axis.text.x = element_text(angle = 0, size = 7)) +
+  xlab("movement condition") +
+  ggtitle('Infraspinatus (external rotator)') +
+  ylab('max sEMG activity \n (normalized)') +
+  theme(plot.title = element_text(hjust = 0.5, size = 10, color = col_infraspinatus)) +
+  scale_colour_brewer(palette = 'Set2') +
+  theme(legend.title=element_blank()) +
+  theme(legend.position = c(0.8, 0.8), legend.key.size = unit(.2, 'cm')) +
+  ylim(-0.1, 5) +
+  geom_hline(yintercept=median(sub$max_infra[sub$movement_condition == 'no movement']), linetype='dashed') +
+  coord_flip()+scale_size_manual(values=c(0.1, 0.2))
+
+
+peaks_rectus_bymovement <- ggplot(sub, aes(x = movement_condition, y=max_rectus,group=interaction(vocal_condition, movement_condition))) +
+  geom_quasirandom(aes(color = vocal_condition, shape = weight_condition), alpha = 0.4, dodge.width = 0.8, cex = 1) +
+  geom_boxplot(aes(size= weight_condition), alpha = 0) +
+  theme_cowplot(12) +
+  theme(axis.text.x = element_text(angle = 0, size = 7)) +
+  xlab("movement condition") +
+  ggtitle('Rectus abdominis (flexor)') +
+  ylab('max sEMG activity \n (normalized)') +
+  theme(plot.title = element_text(hjust = 0.5, size = 10, color = col_rectus)) +
+  scale_colour_brewer(palette = 'Set2') +
+  theme(legend.title=element_blank()) +
+  theme(legend.position = c(0.8, 0.8), legend.key.size = unit(.2, 'cm')) +
+  ylim(-0.1, 5) +
+  geom_hline(yintercept=median(sub$max_rectus[sub$movement_condition == 'no movement']), linetype='dashed') +
+  coord_flip()+scale_size_manual(values=c(0.1, 0.2))
+
+
+peaks_erector_bymovement <- ggplot(sub, aes(x = movement_condition, y=max_erector,group=interaction(vocal_condition, movement_condition))) +
+  geom_quasirandom(aes(color = vocal_condition, shape = weight_condition), alpha = 0.4, dodge.width = 0.8, cex = 1) +
+  geom_boxplot(aes(size = weight_condition), alpha = 0) +
+  theme_cowplot(12) +
+  theme(axis.text.x = element_text(angle = 0, size = 7)) +
+  xlab("movement condition") +
+  ggtitle('Erector spinae (extensor)') +
+  ylab('max sEMG activity \n (normalized)') +
+  theme(plot.title = element_text(hjust = 0.5, size = 10, color = col_erector)) +
+  scale_colour_brewer(palette = 'Set2') +
+  theme(legend.title=element_blank()) +
+  theme(legend.position = c(0.8, 0.8), legend.key.size = unit(.2, 'cm')) +
+  ylim(-0.1, 5) +
+  geom_hline(yintercept=median(sub$max_erector[sub$movement_condition == 'no movement']), linetype='dashed') +
+  coord_flip()+scale_size_manual(values=c(0.1, 0.2))
+
+# Center of Pressure
+peaks_COP_bymovement <- ggplot(sub, aes(x = movement_condition, y=max_COPc,group=interaction(vocal_condition, movement_condition))) +
+  geom_quasirandom(aes(color = vocal_condition, shape = weight_condition), alpha = 0.4, dodge.width = 0.8, cex = 1) +
+  geom_boxplot(aes(size = weight_condition), alpha = 0) +
+  theme_cowplot(12) +
+  theme(axis.text.x = element_text(angle = 0, size = 7)) +
+  xlab("movement condition") +
+  ggtitle('Center of Pressure') +
+  ylab('max COP \n (normalized)') +
+  theme(plot.title = element_text(hjust = 0.5, size = 10, color = "grey")) +
+  scale_colour_brewer(palette = 'Set2') +
+  theme(legend.title=element_blank()) +
+  theme(legend.position = c(0.8, 0.8), legend.key.size = unit(.2, 'cm')) +
+  ylim(-0.1, 5) +
+  geom_hline(yintercept=median(sub$max_COP[sub$movement_condition == 'no movement']), linetype='dashed') +
+  coord_flip()+scale_size_manual(values=c(0.1, 0.2))
+
+# also a summary as a function of weight
+
+# kinematics
+peaks_kinematicssp_bymovement <- ggplot(sub, aes(x = movement_condition, y=peak_speed,group=interaction(vocal_condition, movement_condition))) +
+  geom_quasirandom(aes(color = vocal_condition, shape = weight_condition), alpha = 0.4, dodge.width = 0.8, cex = 1) +
+  geom_boxplot(aes(size = weight_condition), alpha = 0) +
+  theme_cowplot(12) +
+  theme(axis.text.x = element_text(angle = 0, size = 7)) +
+  xlab("movement condition") +
+  ggtitle('Kinematics') +
+  ylab('peak speed \n (normalized)') +
+  theme(plot.title = element_text(hjust = 0.5, size = 10, color = "black")) +
+  scale_colour_brewer(palette = 'Set2') +
+  theme(legend.title=element_blank()) +
+  theme(legend.position = c(0.8, 0.8), legend.key.size = unit(.2, 'cm')) +
+  ylim(-0.1, 5) +
+  geom_hline(yintercept=median(sub$max_kinematics[sub$movement_condition == 'no movement']), linetype='dashed') +
+  coord_flip()+scale_size_manual(values=c(0.1, 0.2))
+
+# kinematics
+peaks_kinematicsacc_bymovement <- ggplot(sub, aes(x = movement_condition, y=peak_acc,group=interaction(vocal_condition, weight_condition,movement_condition))) +
+  geom_quasirandom(aes(color = vocal_condition, shape = weight_condition), alpha = 0.4, dodge.width = 0.8, cex = 1) +
+  geom_boxplot(aes(size = weight_condition), alpha = 0) +
+  theme_cowplot(12) +
+  theme(axis.text.x = element_text(angle = 0, size = 7)) +
+  xlab("movement condition") +
+  ggtitle('Kinematics') +
+  ylab('peak speed \n (normalized)') +
+  theme(plot.title = element_text(hjust = 0.5, size = 10, color = "black")) +
+  scale_colour_brewer(palette = 'Set2') +
+  theme(legend.title=element_blank()) +
+  theme(legend.position = c(0.8, 0.8), legend.key.size = unit(.2, 'cm')) +
+  ylim(-0.1, 5) +
+  geom_hline(yintercept=median(sub$max_kinematics[sub$movement_condition == 'no movement']), linetype='dashed') +
+  coord_flip()+scale_size_manual(values=c(0.1, 0.2))
+
+# kinematics
+peaks_kinematicsacc_bymovement <- ggplot(sub, aes(x = movement_condition, y=peak_acc,group=interaction(vocal_condition, movement_condition))) +
+  geom_quasirandom(aes(color = vocal_condition, shape = weight_condition), alpha = 0.4, dodge.width = 0.8, cex = 1) +
+  geom_boxplot(aes(size = weight_condition), alpha = 0) +
+  theme_cowplot(12) +
+  theme(axis.text.x = element_text(angle = 0, size = 7)) +
+  xlab("movement condition") +
+  ggtitle('Kinematics') +
+  ylab('peak speed \n (normalized)') +
+  theme(plot.title = element_text(hjust = 0.5, size = 10, color = "black")) +
+  scale_colour_brewer(palette = 'Set2') +
+  theme(legend.title=element_blank()) +
+  theme(legend.position = c(0.8, 0.8), legend.key.size = unit(.2, 'cm')) +
+  ylim(-0.1, 5) +
+  geom_hline(yintercept=median(sub$max_kinematics[sub$movement_condition == 'no movement']), linetype='dashed') +
+  coord_flip()+scale_size_manual(values=c(0.1, 0.2))
+
+peaks_voice_bymovement <- ggplot(sub, aes(x = movement_condition, y=max_amp_c_around_move,group=interaction(vocal_condition,movement_condition))) +
+  geom_quasirandom(aes(color = vocal_condition, shape = weight_condition), alpha = 0.4, dodge.width = 0.8, cex = 1) +
+  geom_boxplot(aes(size = weight_condition), alpha = 0) +
+  theme_cowplot(12) +
+  theme(axis.text.x = element_text(angle = 0, size = 7)) +
+  xlab("movement condition") +
+  ggtitle('Voice Positive Peaks') +
+  ylab('peak positive amplitude \n (normalized)') +
+  theme(plot.title = element_text(hjust = 0.5, size = 10, color = "black")) +
+  scale_colour_brewer(palette = 'Set2') +
+  theme(legend.title=element_blank()) +
+  theme(legend.position = c(0.8, 0.8), legend.key.size = unit(.2, 'cm')) +
+  ylim(-0.1, 3) +
+  geom_hline(yintercept=median(sub$max_kinematics[sub$movement_condition == 'no movement']), linetype='dashed') +
+  coord_flip()+scale_size_manual(values=c(0.1, 0.2))
+
+```
+
+```{r movementpeakmuscleactivity1, echo = FALSE, fig.cap = "Muscle and postural activations for vocalization versus expiration.", fig.height = 20}
+grid.arrange(peaks_pectoralis_bymovement, peaks_infraspinatus_bymovement, peaks_rectus_bymovement, peaks_erector_bymovement,peaks_COP_bymovement, 
+             peaks_kinematicssp_bymovement, peaks_kinematicsacc_bymovement, peaks_voice_bymovement, ncol = 2)
+```
+<aside>
+<span style="color: red;">
+Part of this figure is reused for Figure 7 in the paper.
+</span>
+</aside>
+
+Below we also report the descriptive results underlying Figure S10.
+
+\pagebreak
+```{r vocalexpiretable, echo = FALSE, warning = FALSE, message = FALSE, results = 'markup', code_folding = "Show code producing the table"}
+library(tidyr)
+library(gmodels)
+library(plyr)
+
+sub <- tr_wd[ tr_wd$trialindex>9 & (tr_wd$vocal_condition=="vocalize" | tr_wd$vocal_condition=="expire"),] #only real trials
+
+sub$max_pectoral <- scale(sub$max_pectoral, center = FALSE)[,1]
+sub$max_infra    <- scale(sub$max_infra, center = FALSE )[,1]
+sub$max_rectus   <- scale(sub$max_rectus, center = FALSE)[,1]
+sub$max_erector  <- scale(sub$max_erector, center = FALSE)[,1]
+sub$max_COPc     <- scale(sub$max_COPc, center = FALSE)[,1]
+
+subl <- gather(sub, key = muscle, value = peak_activity, c("max_pectoral", "max_infra", "max_rectus", "max_erector"))
+subl$muscle <- revalue(subl$muscle, c("max_pectoral"="pectoralis major", "max_infra"="infraspinatus", "max_rectus"="rectus abdominis", "max_erector"="erector spinae"))
+
+# Define a custom CI function
+ci_custom <- function(x, conf = 0.95) {
+  n <- length(x)
+  m <- mean(x, na.rm=TRUE)
+  s <- sd(x, na.rm=TRUE)
+  error <- qt(conf/2 + 0.5, df = n-1) * s / sqrt(n)
+  c(mean = m, lowCI = m - error, hiCI = m + error, sd = s)
+}
+
+# Summarize data
+descriptivesbymusclesmovement <- subl %>%
+  group_by(muscle, movement_condition, vocal_condition) %>%
+  dplyr::summarize(
+    mean = round(ci_custom(peak_activity)["mean"], 2),
+    sd = round(ci_custom(peak_activity)["sd"], 2),
+    lowCI = round(ci_custom(peak_activity)["lowCI"], 2),
+    hiCI = round(ci_custom(peak_activity)["hiCI"], 2)
+  )
+
+#reorder to make it more comparable to previous Figure
+muscle_order <- c("pectoralis major", "infraspinatus", "rectus abdominis", "erector spinae")
+movement_order <- c("no movement", "internal rotation", "external rotation", "flexion", "extension")
+vocal_order <- c("vocalize", "expire")
+
+descriptivesbymusclesmovement <- descriptivesbymusclesmovement %>%
+  mutate(
+    muscle = factor(muscle, levels = muscle_order),
+    movement_condition = factor(movement_condition, levels = movement_order),
+    vocal_condition = factor(vocal_condition, levels = vocal_order)
+  )
+
+#arrange table based on the defined order
+descriptivesbymusclesmovement <- descriptivesbymusclesmovement %>%
+  arrange(muscle, movement_condition)
+
+#rename columns
+descriptivesbymusclesmovement <- descriptivesbymusclesmovement %>% 
+  dplyr::rename(`Muscle` = `muscle`,
+                `Movement condition` = `movement_condition`,
+                `Vocal condition` = `vocal_condition`,
+                `Mean` = `mean`,
+                `SD` = `sd`,
+                `Low 95% CI` = `lowCI`,
+                `High 95% CI` = `hiCI`)
+```
+
+```{r vocalexpiretablegeneration, echo=FALSE}
+knitr::kable(descriptivesbymusclesmovement,
+             caption = "Normalized peak muscle activity for the different movement conditions and vocalization conditions. These are the numerical results associated with Fig. S11 and Figure 7. The values indicate the peak EMG activity normalized for each muscle.") %>% 
+  kable_paper("hover", full_width = T)
+```
