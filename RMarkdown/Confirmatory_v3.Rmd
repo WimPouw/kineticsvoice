@@ -7,13 +7,13 @@ author:
   corresponding: yes
   email: wim.pouw@donders.ru.nl
   url: https://wimpouw.com/
-  affiliation: Donders Institute for Brain, Cognition, and Behaviour
+  affiliation: Radboud University Nijmegen, Donders Institute for Brain, Cognition, and Behaviour
   affiliation_url: https://www.ru.nl/donders/
   orcid_id: 0000-0003-2729-6502
   address: Thomas van Aquinolaan 4, 6525 AJ Nijmegen, The Netherlands
 - name: Raphael Werner
   url: https://raphael-werner.github.io/
-  affiliation: Donders Institute for Brain, Cognition, and Behaviour
+  affiliation: adboud University Nijmegen, Donders Institute for Brain, Cognition, and Behaviour
   affiliation_url: https://www.ru.nl/donders/
   orcid_id: 0000-0002-4080-7883
 - name: Lara Burchardt
@@ -23,7 +23,7 @@ author:
   orcid_id: 0000-0002-9210-7934
 - name: Luc Selen
   url: https://www.ru.nl/sensorimotorlab/people/current-members/luc-selen/
-  affiliation: Donders Institute for Brain, Cognition, and Behaviour
+  affiliation: adboud University Nijmegen, Donders Institute for Brain, Cognition, and Behaviour
   affiliation_url: https://www.ru.nl/donders/
   orcid_id: 0000-0001-5774-5415
 output:
@@ -85,7 +85,8 @@ r_refs("references.bib")
 ```
 This document contains further information on the supporting methods and results of "The human voice aligns with whole-body kinetics".
 For clarity, it is indicated on the right, what sections in the paper the respective part refers to.
-Code chunks are hidden by default, but can be made visible by clicking "Show code".
+Code chunks are hidden by default, but can be made visible by clicking "Show code".This supporting information is a computationally reproducible Rmarkdown document accessible via https://wimpouw.github.io/kineticsvoice/. Some pieces of information are repeated here in the supporting information so as to increase the self-contained nature of this computationally reproducible document.
+
 
 # Supporting methods and results
  This is a fully computationally reproducible manuscript written in R Markdown. The full dataset is available at the Donders Repository (redacted for review).
@@ -194,13 +195,13 @@ This study concerned a two-level wrist-weight manipulation (no weight vs. weight
 The current pre-registered confirmatory experiment was supported by a power analysis (see [preregistration](https://osf.io/jhdq4)). As planned, we collected *N* = (`r printnum(numpart)`) participants, with the following demographics and biometrics: `r printnum(part_fem, digits = 0)` female, `r printnum(part_male, digits = 0)` male, *M* (*SD*) age = `r printnum(m_age)` (`r printnum(sd_age)`), M (*SD*) body weight = `r printnum(m_weight)` kg (`r printnum(sd_weight)`), *M* (*SD*) body height = `r printnum(m_height)` cm (`r printnum(sd_height)`), *M* (*SD*) BMI = `r printnum(m_bmi)` (`r printnum(sd_bmi)`), *M* (*SD*) triceps skinfold = `r printnum(m_skin)` mm (`r printnum(sd_skin)`).  
 
 ## Exclusions and deviations from pre-registration
-We also performed the experiment with one other participant, but due to an issue with LabStreamingLayer (LSL), this dataset could not be synchronized and was lost. Furthermore, due to running over time one participant had to terminate the study earlier about half way through. Note further, that in our pre-registration we wanted to admit participants with a BMI lower than 25, but since participants were difficult to recruit we accepted three participants with slightly higher BMIs too (max BMI of the current dataset: `r printnum(round(max(bmi),1))`). Participants were all able-bodied and did not have any constraints in performing the task. Finally, as stated in the pre-registration we will only, or primarily, report results on the vocalization trials (and not the expiration-only trials).
-  This means that for this report in total we have N = `r printnum(numpart)` participants, with 636 analyzable trials, with balanced conditions: weight = `r printnum(perc_w)`%,  no movement = `r printnum(perc_pas)`%, internal rotation = `r printnum(perc_int)` %, external rotation = `r printnum(perc_ext)`%, flexion = `r printnum(perc_flex)` %, extension = `r printnum(perc_extens)` %. 
+We also performed the experiment with one other participant, but due to an issue with LabStreamingLayer (LSL), this dataset could not be synchronized and was lost. Furthermore, due to running over time, one participant had to terminate the study earlier about halfway through. Note further, that in our pre-registration we wanted to admit participants with a BMI lower than 25, but since participants were difficult to recruit we accepted three participants with slightly higher BMIs too (max BMI of the current dataset: `r printnum(round(max(bmi),1))`). Participants were all able-bodied and did not have any constraints in performing the task. Finally, as stated in the pre-registration we will only, or primarily, report results on the vocalization trials (and not the expiration-only trials).
+  This means that for this report in total, we have N = `r printnum(numpart)` participants, with 636 analyzable trials, with balanced conditions: weight = `r printnum(perc_w)`%,  no movement = `r printnum(perc_pas)`%, internal rotation = `r printnum(perc_int)` %, external rotation = `r printnum(perc_ext)`%, flexion = `r printnum(perc_flex)` %, extension = `r printnum(perc_extens)` %. 
 
 ## Measurements and equipment
 
 ###  Body measurements
-To enable future analyses of possible factors modulating individual-specific body properties, we collect some basic information about body properties. Namely, weight, under arm length, upper arm length, triceps skinfold, and upper arm circumference.
+To enable future analyses of possible factors modulating individual-specific body properties, we collect some basic information about body properties. Namely, weight, under-arm length, upper-arm length, triceps skinfold, and upper-arm circumference.
 
 ### Experiment protocol
 The experiment was coded in Python using functions from PsychoPy. The experiment was controlled via a Brainvision Button Box (Brain Products GmbH, Munich, Germany), which was also streaming its output to the data collection PC unit.
@@ -213,9 +214,9 @@ The participants are recorded via a video camera (Logitech StreamCam), sampling 
 
 ### Muscle activity (Surface ElectroMyography: sEMG)
 We measured sEMG using a wired BrainAmp ExG system (Brain Products GmbH, Munich, Germany). Disposable surface electrodes (Kendall 24mm Arbo H124SG) were used, and for each of the four muscle targets we had 3 (active, reference, ground) electrodes (12 electrodes total). The sEMG system sampled at 2,500 Hz (for post-processing filters see below).   
-For an overview of the electrode attachments, see Fig. S\@ref(fig:overviewEMGmuscles). We prepare the skin surface for EMG application with a scrub gel (NuPrep) followed by cotton ball swipe with alcohol (Podior 70 %). Active and reference electrodes were attached with a 15mm distance center to center. 
+For an overview of the electrode attachments, see Fig. S\@ref(fig:overviewEMGmuscles). We prepare the skin surface for EMG application with a scrub gel (NuPrep) followed by a cotton ball swipe with alcohol (Podior 70 %). Active and reference electrodes were attached with a 15mm distance center to center. 
 
-```{r overviewEMGmuscles, echo=FALSE, fig.cap =  "Overview sEMG target muscles. Active (a) and reference (r), and ground (g) sEMG electrodes, for each muscle target."}
+```{r overviewEMGmuscles, echo=FALSE, fig.cap =  "Overview sEMG target muscles. Active (a), reference (r), and ground (g) sEMG electrodes, for each muscle target."}
 knitr::include_graphics(paste0(basefolder, '/after_edited_plots/emg_measurements_overview.png'))
 ```
 <aside>
@@ -223,11 +224,11 @@ knitr::include_graphics(paste0(basefolder, '/after_edited_plots/emg_measurements
 </span>
 </aside>
 
-We attached electrodes for focal muscles which directly participate in the internal (pectoralis major) and external rotation (infraspinatus) of the humerus. Electrodes were applied for focal muscles ipsilaterally (relative to the dominant hand). We attached electrodes to the muscle belly of the clavicular head of the pectoralis major, with a ground electrode on the clavicle on the opposite side.  
+We attached electrodes for focal muscles that directly participate in the internal (pectoralis major) and external rotation (infraspinatus) of the humerus. Electrodes were applied for focal muscles ipsilaterally (relative to the dominant hand). We attached electrodes to the muscle belly of the clavicular head of the pectoralis major, with a ground electrode on the clavicle on the opposite side.  
 We also attached electrodes for postural muscles which will likely anticipate and react to postural perturbations due to upper limb movements. Since these muscles should act in the opposite direction of the postural perturbation of the dominant hand, we applied electrodes contralaterally to the dominant hand. We attach electrodes to the rectus abdominis, with a ground electrode on the iliac crest on the opposite side. We also attached electrodes to the erector spinae muscle group (specifically, the iliocostalis lumborum).
 
 ### Ground reaction measurements
-We used an inhouse-built 1m² balance board with vertical pressure sensors. The sensors were derived and remodified from four Wii-Balance board sensors. The sampling rate was 400 Hz. The system was time-locked within millisecond accuracy, and has a spatial accuracy of several sub-millimeters. A national instruments card, USB-62221 performed the A/D conversion and was connected via USB to the PC.
+We used an inhouse-built 1m² balance board with vertical pressure sensors. The sensors were derived and remodified from four Wii-Balance board sensors. The sampling rate was 400 Hz. The system was time-locked within millisecond accuracy and has a spatial accuracy of several sub-millimeters. A national instruments card, USB-62221 performed the A/D conversion and was connected via USB to the PC.
 
 ### Acoustics
 To ensure proper acoustic intensity measurements we used a headset microphone; MicroMic C520 (AKG, Inc.) headset condenser cardioid microphone sampling at 16 kHz. The gain levels of the condenser power source were set by the hardware (and could not be changed).
@@ -295,12 +296,12 @@ Participants were admitted to the study based on exclusion criteria and signed a
 
 Upon the start of the experiment participants took a standing position on the force platform. The experiment commenced with calibration and practice trials. First, 10 seconds of silent breathing without body movements were recorded. Then participants were asked to take a maximum inspiration followed by a maximum expiration, so as to measure signal conditions under respiratory boundary conditions. Then, for the practice trials, each movement was practiced with expiring and vocalization while performing the movement conditions, and the participant is introduced to wearing the wrist weight of 1 kg. After practice trials, participants performed 80 blocked trials.
 
-For each (practice) trial participants were closely guided by the information on the monitor. Firstly, participants were shown the movement to be performed for the trial, and were prompted by the experimenter to get ready to repeat the movement. No detailed instructions were given about how to move, other then showing the movements in animations, showing a person-masked skeleton performing the movement ((see stimuli example OSF)[https://osf.io/dnu4j/?view_only=2a1de243931946a6b1c602f4bcafd691]). Then participants were instructed to adopt the start position of the movement, which is a 90 degree elbow flexion, with either an externally rotated humerus (start position for internal rotation), or a non-rotated humerus with the wrist in front of the body (rest position for the other movement conditions). For the no movement condition, participants were asked to rest their arms alongside their body. Upon trial start, participants inhaled deeply with a timer counting down from 4 seconds. Then, participants vocalized or expired depending on condition assignment, with a screen appearing after 3 seconds to perform the movement. Visual guidance was provided to remind the participant of the end location, where a static images was shown of the movement end position. After an additional 4 seconds the trial ended. The 4 seconds allowed more than enough time to perform the movement and stabilize vocalization after the perturbation. In the no movement condition, a prompt was given to maintain one's posture with an image of the rest position (arms alongside the body).
+For each (practice) trial participants were closely guided by the information on the monitor. Firstly, participants were shown the movement to be performed for the trial, and were prompted by the experimenter to get ready to repeat the movement. No detailed instructions were given about how to move, other than showing the movements in animations, showing a person-masked skeleton performing the movement ((see stimuli example OSF)[https://osf.io/dnu4j/?view_only=2a1de243931946a6b1c602f4bcafd691]). Then participants were instructed to adopt the start position of the movement, which is a 90 degree elbow flexion, with either an externally rotated humerus (start position for internal rotation), or a non-rotated humerus with the wrist in front of the body (rest position for the other movement conditions). For the no movement condition, participants were asked to rest their arms alongside their body. Upon trial start, participants inhaled deeply with a timer counting down from 4 seconds. Then, participants vocalized or expired depending on condition assignment, with a screen appearing after 3 seconds to perform the movement. Visual guidance was provided to remind the participant of the end location, where a static images was shown of the movement end position. After an additional 4 seconds the trial ended. The 4 seconds allowed more than enough time to perform the movement and stabilize vocalization after the perturbation. In the no movement condition, a prompt was given to maintain one's posture with an image of the rest position (arms alongside the body).
 
 ## Preprocessing of the data streams
 
 ### EMG
-To reduce heart rate artifacts we apply a common method [@drakeEliminationElectrocardiogramContamination2006] of high-pass filtering the signal at 30 Hz using a zero-phase 4th order Butterworth filter. We then full-wave rectified the EMG signal and applied a zero-phase low-pass 4th order Butterworth filter at 20 Hz. When filtering any signal we pad the signals to avoid edge effects. We normalized the EMG signals within participants before submitting to analyses.
+To reduce heart rate artifacts we applied a common method [@drakeEliminationElectrocardiogramContamination2006] of high-pass filtering the signal at 30 Hz using a zero-phase 4th order Butterworth filter. We then full-wave rectified the EMG signal and applied a zero-phase low-pass 4th-order Butterworth filter at 20 Hz. When filtering any signal we pad the signals to avoid edge effects. We normalized the EMG signals within participants before submitting them to analyses.
 
 ```{r, EMGpreprocess, warning = FALSE, echo = TRUE, code_folding = "Show code preprocessing EMG data", message = FALSE}
 # load in the data and save it
@@ -396,7 +397,7 @@ filteredEMG <- filteredEMG +
 ```
 
 
-```{r EMGsmoothing, echo=FALSE, fig.cap = "Example of smoothing settings for EMG signals. The upper panel shows the raw rectified high-pass filtered EMG, and the lower panel shows the low-pass filtered data to reduce artifacts of heart rate. This example shows an internal rotation trial, where we successfully retrieve the peak in pectoralis major that internally rotates the arm."}
+```{r EMGsmoothing, echo=FALSE, fig.cap = "Example of smoothing settings for EMG signals. The upper panel shows the raw rectified high-pass filtered EMG, and the lower panel shows the low-pass filtered data to reduce artifacts of heart rate. This example shows an internal rotation trial, where we successfully retrieve the peak in the pectoralis major that internally rotates the arm."}
 grid.arrange(unfilteredEMG, filteredEMG, nrow= 2)
 ```
 <aside>
@@ -405,10 +406,10 @@ grid.arrange(unfilteredEMG, filteredEMG, nrow= 2)
 </aside>
 
 ### Ground reaction forces
-We upsampled the balanceboard from 400 Hz to 2,500 Hz. We then applied a zero-phase low-pass 2nd order Butterworth filter at 20 Hz to the padded signals. Thes signals were used to calculate the key measure for postural perturbation we computed the change in 2D magnitude (L2 norm for x and y, and combined) in center of pressure. We refer to this as the change in the center of pressure (COPc), or the anterior-posterior COPc (front-back sway), or the medial-lateral COPc (left-right sway).
+We upsampled the balanceboard from 400 Hz to 2,500 Hz. We then applied a zero-phase low-pass 2nd order Butterworth filter at 20 Hz to the padded signals. These signals were used to calculate the key measure for postural perturbation we computed the change in 2D magnitude (L2 norm for x and y, and combined) in center of pressure. We refer to this as the change in the center of pressure (COPc), or the anterior-posterior COPc (front-back sway), or the medial-lateral COPc (left-right sway).
 
 ### Acoustics
-For acoustics we extracted the smoothed amplitude envelope (hereafter envelope). For the envelope we applied a Hilbert transform to the waveform signal, then taking the complex modulus to create a 1D time series, which was then resampled at 2,500 Hz, and smoothed with a Hann filter based on a Hanning Window of 12 Hz. We normalize the amplitude envelope signals within participants before submitting to analyses.
+For acoustics, we extracted the smoothed amplitude envelope (hereafter envelope). For the envelope we applied a Hilbert transform to the waveform signal, took the complex modulus to create a 1D time series, which was then resampled at 2,500 Hz, and smoothed with a Hann filter based on a Hanning Window of 12 Hz. We normalize the amplitude envelope signals within participants before submitting to analyses.
 
 ```{r, message = FALSE, warning = FALSE, echo = TRUE, code_folding = "Show code extracting acoustics"}
 library(rPraat) #for reading in sounds
@@ -543,7 +544,7 @@ for(ID in triallist$uniquetrial)
  Video data is deidentified using the masked-piper tool to mask faces and body while maintaining kinematic information [@owoyeleMaskedpiperMaskingPersonal2022].
 
 ## Overview data analyses
-Note that there is a general decline in the amplitude of the vocalization during a trial (see Fig. S\@ref(fig:combinedtimeseries), top panel). This is to be expected, as the subglottal pressure falls when the lungs deflate. To quantify deviations from stable vocalizations, we therefore detrended the amplitude envelope time series, so as to assess positive or negative peaks relative to this trend line. For the envelope, muscle activity, and the change in center of pressure, we will measure the global maxima happening within the analyses window (i.e., within a trial we take a local maximum occurring between movement onset and offset). We analyzed positive and negative peaks within the movement window separately.
+Note that there is a general decline in the amplitude of the vocalization during a trial (see Fig. S\@ref(fig:combinedtimeseries), top panel). This is to be expected, as the subglottal pressure falls when the lungs deflate. To quantify deviations from stable vocalizations, we therefore detrended the amplitude envelope time series, to assess positive or negative peaks relative to this trend line. For the envelope, muscle activity, and the change in center of pressure, we will measure the global maxima happening within the analyses window (i.e., within a trial we take a local maximum occurring between movement onset and offset). We analyzed positive and negative peaks within the movement window separately.
 
 ```{r normalization_EMG, cache = FALSE, ECHO = TRUE, code_folding = "Show code scaling data within participant"}
 #We have to do some within participant scaling, such that
@@ -670,7 +671,7 @@ exampleEMG <- ggplot(exts2, aes(x=time_ms)) +
   xlab('time (ms)')
 ```
 
-```{r combinedtimeseries, echo=FALSE, message = FALSE, fig.cap = "Combined time series. One example trial and the associated signals are shown, for the internal rotation movement condition. At time = 0 s, the prompt is given to the participant to vocalize. We determine a detrending line using linear regression for the 1 to 5 s after the vocalization prompt. Note, at 3 s (3000 ms), there is a movement prompt. However, we determine our window where we assess peaks in signals at 500 ms before and after the movement onset/offset (using peakfinding function on the 2D speed time series of the wrist). In these trials, the analysis window is given in gray dashed bars, which is 500 ms after and before movement onset/offset.", fig.height = 12}
+```{r combinedtimeseries, echo=FALSE, message = FALSE, fig.cap = "One example trial and the associated signals are shown, for the internal rotation movement condition. At time = 0 s, the prompt is given to the participant to vocalize. We determine a detrending line using linear regression for the 1 to 5 seconds after the vocalization prompt. Note, that at 3 s (3000 ms), there is a movement prompt. However, we determine our window where we assess peaks in signals at 500 ms before and after the movement onset/offset (using peakfinding function on the 2D speed time series of the wrist). In these trials, the analysis window is given in gray dashed bars, which is 500 ms after and before movement onset/offset.", fig.height = 12}
 plot_grid(exampleenvelope, examplemovement, exampleCOP, exampleEMG, ncol = 1, align = 'v', axis = 'l')
 ```
 <aside>
@@ -812,11 +813,11 @@ tr_wd$ppn <- ifelse(tr_wd$ppn%in%c(41, 42), 4, tr_wd$ppn)
 # Supporting results
 
 ## Descriptive results and statistical manipulation checking
-Before moving to our main pre-registered hypothesis testing, we first provide an overview of the data and statistical manipulation checks. This includes the timing of the movements, the magnitude of the muscle, postural, and kinematic peaks per movement and weight condition, as well as the effect of vocal condition on the magnitude of those peaks.
+Before moving to our main pre-registered hypothesis testing, we first provide an overview of the data and statistical manipulation checks. This includes the timing of the movements, the magnitude of the muscle, postural, and kinematic peaks per movement and weight condition, as well as the effect of the vocal condition on the magnitude of those peaks.
 
 ### Muscle, postural, and kinematic changes for different movement and weight conditions
 
-Fig. S\@ref(fig:movementpeakmuscleactivityplot) shows an overview of the muscle activity patterns for each movement condition, split over weight conditions. Table S\@ref(tab:manipchecktableS1) provides the numerical information. All in all, these descriptive results pattern in sensible ways. There is generally more (postural) muscle, postural, and kinematic activity in movement conditions. Focal muscles powering internal (pectoralis major) or external (infraspinatus) rotation are peaking in activity during these movement conditions. Especially for flexion and extension (rather than internal/external rotation) we obtain anterior-posterior change in the center of pressure. Generally, there is a higher muscle, postural activity when wearing weights, while weights generally reduces peak speed and acceleration. Below we go into more details, for the statistical confirmation of these findings.
+Figure S\@ref(fig:movementpeakmuscleactivityplot) shows an overview of the muscle activity patterns for each movement condition, split across weight conditions. Table S\@ref(tab:manipchecktableS1) provides the numerical information. All in all, these descriptive results pattern in sensible ways. There is generally more (postural) muscle, postural, and kinematic activity in movement conditions. Focal muscles powering internal (pectoralis major) or external (infraspinatus) rotation are peaking in activity during these movement conditions. Especially for flexion and extension (rather than internal/external rotation) we obtain anterior-posterior change in the center of pressure. Generally, there is a higher muscle, postural activity when wearing weights, while weights generally reduces peak speed and acceleration. Below we go into more detail, for the statistical confirmation of these findings.
 
 ```{r movementpeakmuscleactivity, code_folding = "Show plotting code"}
 library(magick)
@@ -1163,7 +1164,7 @@ This is referred to as Table S1 in the paper.
 
 #### Statistical tests for manipulation checking of movement vs. no movement condition on muscle and postural measurements
 
-First we report whether our manipulation of movement vs. no movement (binary comparison) indeed increases postural and muscle activity. As expected, the increased activity of muscles, except the rectus abdominis, is confirmed by comparing mixed regression models (participant as random intercept) predicting magnitude of the peak muscle activity with a movement vs. no movement predictor included, versus a model predicting the overall mean.
+First, we report whether our manipulation of movement vs. no movement (binary comparison) indeed increases postural and muscle activity. As expected, the increased activity of muscles, except the rectus abdominis, is confirmed by comparing mixed regression models (participant as random intercept) predicting the magnitude of the peak muscle activity with a movement vs. no movement predictor included, versus a model predicting the overall mean.
 
 ```{r simpletestofeffectsofmovement, echo = FALSE, code_folding = "Show code for testing movement vs. no movement analysis"}
 sub <- tr_wd[ tr_wd$trialindex>9,] #only real trials
@@ -1243,7 +1244,7 @@ This is referred to as Table S2 in the paper.
 
 #### Statistical tests for manipulation checking of differences between movement-only conditions on muscle, postural, and kinematic measurements
 
-We assessed whether there is an effect of weight in movement-only conditions over and above a model that includes a movement predictor. We find that weight indeed affects all measured muscle activity except the rectus abdominis. Weight also affects kinematics, confirmed the lower speeds and accelerations for when moving with a weight (Table S1, Figure S4). However, the weight did not find statistically reliable effects of weight on the change in the center of pressure.
+We assessed whether there is an effect of weight in movement-only conditions over and above a model that includes a movement predictor. We find that weight indeed affects all measured muscle activity except the rectus abdominis. Weight also affects kinematics, confirmed the lower speeds and accelerations when moving with a weight (Table S1, Figure S4). However, we did not find statistically reliable effects of weight on the change in the center of pressure.
 
 ```{r simpletestofeffectsofweight, code_folding = "Show code for assessing effects between of weight condition for the movement-only conditions"}
 sub <- tr_wd[ tr_wd$trialindex>9 & tr_wd$movement_condition != 'no movement',] #only real trials
@@ -1301,7 +1302,7 @@ knitr::kable(modcompare_yn,
 
 #### Statistical tests for manipulation checking of differences between movement-only conditions on muscle, postural, and kinematic measurements
 
-We performed the same type of manipulation check to assess whether there are any differences in posture (anterior posterior, medial-lateral), muscle activity, and kinematics (speed and acceleration), between the different types of movements (i.e., the movement-only conditions). We only test overall effects of movement conditions, versus a model predicting the overall mean (but also see table S1 and Figure S4 for detailed information). As can be seen, different types of movements lead to different peak muscle activity (except for the rectus abdominis), as well as leading to different peak change of center of pressure and kinematics (speed and acceleration).
+We performed the same type of manipulation check to assess whether there are any differences in posture (anterior posterior, medial-lateral), muscle activity, and kinematics (speed and acceleration), between the different types of movements (i.e., the movement-only conditions). We only test overall effects of movement conditions, versus a model predicting the overall mean (but also see table S1 and Figure S4 for detailed information). Different types of movements lead to different peak muscle activity (except for the rectus abdominis), as well as leading to different peak change of center of pressure and kinematics (speed and acceleration).
 
 
 ```{r addedsimpleeffectofmovementconditions, code_folding = "Show code for assessing effects between movement-only conditions", warning=FALSE}
@@ -1382,24 +1383,9 @@ This is referred to as Table S4 in the paper.
 </aside>
 
 ## Main Confirmatory Analyses
-We planned three confirmatory analyses as outlined in the pre-registration, where we assessed whether:
-
-#### 1. Movement and weight conditions have (different) effects on vocalization amplitude
-
-**H0 I:** The movement and weight conditions, as compared to control movement conditions (passive, no weight conditions) do not affect vocalization amplitude.
-
-#### 2. Muscle Activity Effects on Vocalization Amplitude
-
-**H0 II:** Muscle activity (differentially) affects amplitude of vocalization
-
-#### 3. Postural muscle activity is related to postural stability (change in center of pressure)
-
-**H0 III:** No muscle activity is related to postural stability in any of the conditions.
-
-As pre-registered, for the current confirmatory analyses we focus on the vocalization condition, ignoring the expiration baseline conditions as they are of secondary interest at this point of our inquiry.
 
 ### Research Question 1: Do movement and weight conditions have (different) effects on vocalization amplitude? {#analysis-1}
-From inspecting the summarized trajectories, and the descriptive exploratory analyses above, we obtain that the internal rotation of the arm seems to start with a negative peak around the onset of the movement, which is followed by a positive peak. Furthermore, we observe that all other movements primarily have a positive peak. A straightforward test of whether the amplitude envelope has positive or negative peaks is to assess differences in peaks in the vocalization conditions per movement (and weight) condition.  
+From inspecting the summarized trajectories, and the descriptive exploratory analyses above, we obtain that the internal rotation of the arm seems to be preceded by a negative peak in vocalization around the onset of the movement, which is followed by a positive peak. Furthermore, we observe that all other movements primarily have a positive peak in the amplitude of the voice. A straightforward test of whether the voice amplitude envelope has positive or negative peaks is to assess differences in peaks in the vocalization conditions per movement (and weight) condition.  
 
 ```{r, echo = TRUE, warning = FALSE, message = FALSE, code_folding = "Show code producing the plot"}
 sub <- tr_wd[ tr_wd$trialindex>9 & tr_wd$vocal_condition=='vocalize',] #only real trials
@@ -1478,7 +1464,7 @@ plot_grid(pospeakamplitudemovement, pospeakamplitudeweight, negpeakamplitudemove
 ```
 <aside>
 <span style="color: red;">
-This is referred to as Figure S6 in the paper.
+This is part of Figure 3 in the paper.
 </span>
 </aside>
 
@@ -1535,11 +1521,6 @@ knitr::kable(round(modelsummarypospeaksweightmovement, 3),
              caption = "Effects of weight and movement condition on magnitude positive peaks in amplitude envelope.") %>% 
   kable_paper("hover", full_width = T)
 ```
-<aside>
-<span style="color: red;">
-This is referred to as Table S3 in the paper.
-</span>
-</aside>
 
 Note that in the previous model we assess the role of weight vs. no weight. But during the no movement condition the weight is not affecting the participant. Thus, a better estimate of the effect of wrist weight is to assess weight vs. no weight conditions for only the movement conditions. Below it shows indeed that this comparison further increases the effect strength as compared to a model with the no movement condition included.
 
@@ -1548,11 +1529,6 @@ knitr::kable(round(modelsummarypospeaksweightmovement_onlymovement, 3),
              caption = "Effects of weight on magnitude of positive peaks in amplitude envelope (no movement condition filtered out).") %>% 
   kable_paper("hover", full_width = T)
 ```
-<aside>
-<span style="color: red;">
-This is referred to as Table S4 in the paper.
-</span>
-</aside>
 
 ```{r, warning = FALSE, message = FALSE, echo = TRUE, cache = TRUE, code_folding = "Show code running models on negative amplitude peaks"}
 # model 2
@@ -1606,7 +1582,7 @@ knitr::kable(round(modelsummarynegpeaksweightmovement_onlymovement, digits = 3),
   kable_paper("hover", full_width = T)
 ```
 
-We further performed an exploratory post-hoc analyses to see if the different movement conditions themselves were reliably different from each other in terms of affecting the voice. We performed Tukey-corrected post-hoc analyses on the linear mixed regression models using R-package 'emmeans'. As can be seen there are no differences between movement-only conditions in terms of the degree they affect the magnitude of positive or negative peaks in the amplitude envelope of the vocalization. 
+We further performed an exploratory post-hoc analyses to see if the different movement conditions themselves were reliably different from each other in terms of affecting the voice. We performed Tukey-corrected post-hoc analyses on the linear mixed regression models using R-package 'emmeans'. As can be seen, there are no differences between movement-only conditions in terms of the degree they affect the magnitude of positive or negative peaks in the amplitude envelope of the vocalization. 
 
 ```{r, warning = FALSE, message = FALSE, echo = FALSE}
 library(lme4)
@@ -1671,7 +1647,7 @@ kable(posthoc_table_neg,
 
 ```
 
-### Research Question 2: Do movement and weight conditions have (different) effects on vocalization amplitude?{#analysis-2}
+### Research Question 2: Is muscle activity (differentially) affecting the amplitude of vocalization?{#analysis-2}
 
 ```{r, echo = TRUE, warning = FALSE, message =FALSE, code_folding = "Show code calculating VIF"}
 sub <- tr_wd[tr_wd$vocal_condition == 'vocalize' & tr_wd$trialindex>9,]
@@ -1793,7 +1769,7 @@ negpeakamplitude_peakeinfraspinatus <- ggplot(sub, aes(y = min_amp_c_around_move
 
 
 <aside>
-<span style="color: red;"> This refers to Figure 2, panel C (positive) and panel D (negative) of the paper.
+<span style="color: red;"> This refers to Figure 3, panel C (positive) and panel D (negative) of the paper.
 </span>
 </aside> 
 
@@ -1829,7 +1805,7 @@ rownames(modelsummarypospeaksbymuscle) <- c('Intercept', 'erector spinae', 'infr
 # also do post hoc tests
 ```
 
-  A model with participant as random intercept the different peak muscle activities explained more variance than a base model predicting the overall mean, Change in Chi-Squared = `r printnum(pospeaks_bymuscle_comparison$Chisq[2])` (`r printnum(round(pospeaks_bymuscle_comparison[2,1]-pospeaks_bymuscle_comparison[1,1]))`), *p* `r printnum(ifelse(pospeaks_bymuscle_comparison[2,8] > .001, paste('=', pospeaks_bymuscle_comparison[2,8]), '< .001'))`). We also tried to fit a more complex model with random slopes for participants, but such model did not converge. The model coefficients are given in Table S\@ref(tab:modelpospeaksbymuscle). Further, Table S\@ref(tab:modelpospeaksbymuscle) shows that peak EMG activity in all the muscles (except for the rectus abdominis) leads to statistically reliable increases in positive peaks in the amplitude envelope (with stronger effects).
+  A model with participant as random intercept the different peak muscle activities explained more variance than a base model predicting the overall mean, Change in Chi-Squared = `r printnum(pospeaks_bymuscle_comparison$Chisq[2])` (`r printnum(round(pospeaks_bymuscle_comparison[2,1]-pospeaks_bymuscle_comparison[1,1]))`), *p* `r printnum(ifelse(pospeaks_bymuscle_comparison[2,8] > .001, paste('=', pospeaks_bymuscle_comparison[2,8]), '< .001'))`). We also tried to fit a more complex model with random slopes for participants, but such a model did not converge. The model coefficients are given in Table S\@ref(tab:modelpospeaksbymuscle). Further, Table S\@ref(tab:modelpospeaksbymuscle) shows that peak EMG activity in all the muscles (except for the rectus abdominis) leads to statistically reliable increases in positive peaks in the amplitude envelope (with stronger effects).
 
 
 ```{r modelpospeaksbymuscle, echo=FALSE}
@@ -1878,7 +1854,7 @@ colnames(modelsummarymaxCOPcbymuscle) <- c('Estimate', 'SE', 'df', 't-value', 'p
 rownames(modelsummarymaxCOPcbymuscle) <- c('Intercept', 'erector spinae', 'infraspinatus', 'pectoralis major', 'rectus abdominis')
 ```
 
-Finally, we will assess which muscle activity can be related to changes in the center of pressure, which would directly confirm that gesture-speech biomechanics relate to postural stability [@pouwGestureSpeechPhysics2020]. Figure S\@ref(fig:correlationmusclesCOPc) shows the graphical results. We similarly performed a linear mixed regression (with participant as random intercept) with a model containing peak EMG activity for each muscle which was regressed on the peak in change in the center of pressure (COPc). We obtained that a base model predicting the over all mean of COPc was outperformed relative to said model, Change in Chi-Squared = `r printnum(maxCOPc_bymuscle_comparison$Chisq[2])` (`r printnum(round(maxCOPc_bymuscle_comparison[2,1]-maxCOPc_bymuscle_comparison[1,1]))`), *p* `r printnum(ifelse(maxCOPc_bymuscle_comparison[2,8] > .001, paste('=', maxCOPc_bymuscle_comparison[2,8]), '< .001'))`). Table S\@ref(tab:modelmaxCOPcbymuscle) provides the coefficient information. We find that only the postural muscles (rectus abdominis, erector spinae) indeed reliably predict the magnitude of changes in the center of pressure, while the pectoralis major and the infraspinatus do not reliably relate to the changes in ground reaction forces.
+Finally, we will assess which muscle activity can be related to changes in the center of pressure, which would directly confirm that gesture-speech biomechanics relate to postural stability [@pouwGestureSpeechPhysics2020]. Figure S\@ref(fig:correlationmusclesCOPc) shows the graphical results. We similarly performed a linear mixed regression (with participant as random intercept) with a model containing peak EMG activity for each muscle which was regressed on the peak in the change in the center of pressure (COPc). We obtained that a base model predicting the over all mean of COPc was outperformed relative to said model, Change in Chi-Squared = `r printnum(maxCOPc_bymuscle_comparison$Chisq[2])` (`r printnum(round(maxCOPc_bymuscle_comparison[2,1]-maxCOPc_bymuscle_comparison[1,1]))`), *p* `r printnum(ifelse(maxCOPc_bymuscle_comparison[2,8] > .001, paste('=', maxCOPc_bymuscle_comparison[2,8]), '< .001'))`). Table S\@ref(tab:modelmaxCOPcbymuscle) provides the coefficient information. We find that only the postural muscles (rectus abdominis, erector spinae) indeed reliably predict the magnitude of changes in the center of pressure, while the pectoralis major and the infraspinatus do not reliably relate to the changes in ground reaction forces.
 
 ```{r, echo = FALSE, message = FALSE, warning = FALSE, code_folding = "Show code producing the plot"}
 
@@ -1948,7 +1924,7 @@ COPcbymuscle_erector <- ggplot(sub, aes(x = max_COPc)) +
 ```
 
 <aside>
-<span style="color: red;"> The bottom-right plot (green) can be found in Figure 2, panel E.
+<span style="color: red;"> The bottom-right plot (green) can be found in Figure 3, panel E.
 </span>
 </aside> 
 
@@ -1966,7 +1942,7 @@ knitr::kable(round(modelsummarymaxCOPcbymuscle, 3),
 ## Other exploratory analyses
 
 ### Synergies
-Along with the confirmatory analyses reported above that relate to questions posed in the pre-registration, we report on additional, exploratory analyses. Firstly we assess for possible context-dependent interrelationships of posture, muscle activity, and voice, by producing correlation matrices per movement condition (see Tables S\@ref(tab:corrinternalrotation), S\@ref(tab:correxternalrotation), S\@ref(tab:corrextension), S\@ref(tab:corrflexion)) which are represented in our synergies plot in Fig. 3 (panel F) in the main article. We see that producing different movements can recruit variable interrelationships between muscle, posture and voice. Striking to pick out is for example that we find a direct relationship between the degree of center of pressure change and the magnitude of positive amplitude peaks in the voice.
+Along with the confirmatory analyses reported above that relate to questions posed in the pre-registration, we report on additional, exploratory analyses. Firstly we assess for possible context-dependent interrelationships of posture, muscle activity, and voice, by producing correlation matrices per movement condition (see Tables S\@ref(tab:corrinternalrotation), S\@ref(tab:correxternalrotation), S\@ref(tab:corrextension), S\@ref(tab:corrflexion)) which are represented in our synergies plot in Fig. 3 (panel F) in the main article. We see that producing different movements can recruit variable interrelationships between muscle, posture, and voice. Striking to pick out is for example that we find a direct relationship between the degree of center of pressure change and the magnitude of positive amplitude peaks in the voice.
 
 ```{r, echo = TRUE, layout="l-body-outset", code_folding = "Show code producing the correlation matrices and plots"}
 library(corx)
@@ -2096,7 +2072,7 @@ correlation_posture_internalrotation <- sub %>%
 ```
 
 
-Table S\@ref(tab:corrinternalrotation) shows the correlation matrix for the maximum peaks in EMG (row and columns 1-4), change in center of pressure (5) and maximum vocal amplitude (6).
+Table S\@ref(tab:corrinternalrotation) shows the correlation matrix for the maximum peaks in EMG (row and columns 1-4), change in center of pressure (5), and maximum vocal amplitude (6).
 For this table, the data only include the **internal rotation** condition.
 
 <aside>
@@ -2110,7 +2086,7 @@ knitr::kable(corr_internalrotation$apa,
   kable_paper("hover", full_width = T)
 ```
 
-Table S\@ref(tab:correxternalrotation) shows the correlation matrix for the maximum peaks in EMG (row and columns 1-4), change in center of pressure (5) and maximum vocal amplitude (6)
+Table S\@ref(tab:correxternalrotation) shows the correlation matrix for the maximum peaks in EMG (row and columns 1-4), change in center of pressure (5), and maximum vocal amplitude (6)
 For this table, the data only include the **external rotation** condition.
 
 ```{r correxternalrotation, echo=FALSE}
@@ -2119,7 +2095,7 @@ knitr::kable(corr_externalrotation$apa,
   kable_paper("hover", full_width = T)
 ```
 
-Table S\@ref(tab:corrextension) shows the correlation matrix for the maximum peaks in EMG (row and columns 1-4), change in center of pressure (5) and maximum vocal amplitude (6)
+Table S\@ref(tab:corrextension) shows the correlation matrix for the maximum peaks in EMG (row and columns 1-4), change in center of pressure (5), and maximum vocal amplitude (6)
 For this table, the data only include the **extension** condition.
 
 ```{r corrextension, echo=FALSE}
@@ -2128,7 +2104,7 @@ knitr::kable(corr_extension$apa,
   kable_paper("hover", full_width = T)
 ```
 
-Table S\@ref(tab:corrflexion) shows the correlation matrix for the maximum peaks in EMG (row and columns 1-4), change in center of pressure (5) and maximum vocal amplitude (6)
+Table S\@ref(tab:corrflexion) shows the correlation matrix for the maximum peaks in EMG (row and columns 1-4), change in center of pressure (5), and maximum vocal amplitude (6)
 For this table, the data only include the **flexion** condition.
 
 ```{r corrflexion, echo=FALSE}
@@ -2141,13 +2117,13 @@ knitr::kable(corr_flexion$apa,
 correlation_posture_internalrotation
 ```
 <aside>
-<span style="color: red;"> This refers to Figure 2, panel G in the paper.
+<span style="color: red;"> This refers to Figure 3, panel G in the paper.
 </span>
 </aside> 
 
 Figure S\@ref(fig:correlationpostureinternalrotation) visualizes the positive correlation between posture (max. change in center of pressure) and vocalization amplitude (positive peaks in amplitude) found for the internal rotation condition in Table S\@ref(tab:corrinternalrotation).
 
-We finally explored the timing relationship of negative and positive peaks in the amplitude of the voice relative to the peak in speed of the hand. The density plot in Fig. S\@ref(fig:densitydistance) visualizes the temporal relationship between peak speed in movement and negative (left) and positive (right) peaks in the amplitude envelope, relative to the moment the moving hand reaches a peak in speed during the trial (i.e., t = 0, at peak speed of the wrist). Our findings corroborate our general observation that positive (rather than negative) peaks seem to be more robustly driven by gesture kinetics. In the timing relations obtained, the negative peaks that we observe are more variably distributed around peak speed, while for the positive peaks we see clear occurrences just around the movement onset (just before the peak speed at t = 0). This result, next to our more robust relationship between positive peaks and the muscele and posture signals, makes us conclude that in general the movements performed in our experiment are increasing subglottal pressures increasing the voice's amplitude.
+We finally explored the timing relationship of negative and positive peaks in the amplitude of the voice relative to the peak in speed of the hand. The density plot in Fig. S\@ref(fig:densitydistance) visualizes the temporal relationship between peak speed in movement and negative (left) and positive (right) peaks in the amplitude envelope, relative to the moment the moving hand reaches a peak in speed during the trial (i.e., t = 0, at peak speed of the wrist). Our findings corroborate our general observation that positive (rather than negative) peaks seem to be more robustly driven by gesture kinetics. In the timing relations obtained, the negative peaks that we observe are more variably distributed around peak speed, while for the positive peaks, we see clear occurrences just around the movement onset (just before the peak speed at t = 0). This result, next to our more robust relationship between positive peaks and the muscele and posture signals, makes us conclude that in general the movements performed in our experiment are increasing subglottal pressures increasing the voice's amplitude.
 
 ```{r, echo = FALSE, message = FALSE, warning = FALSE, code_folding = "Show code producing the plot"}
 sub <- tr_wd[ (tr_wd$trialindex>9) & (tr_wd$vocal_condition=='vocalize'),]
@@ -2181,12 +2157,12 @@ densitydistance <- subpeak %>%
 plot_grid(densitydistance)
 ```
 
-## Exploratory confounding analysis
-### Exploratory confounding analysis for the issue of causality
-Fig. S\@ref(fig:gamtimingplotgenerated) shows the amplitude envelope and EMG activity of an interval around the movement onset. Here we have modeled the by-participant normalized (z-scale) continuous trajectories of the amplitude envelope and all the other signals (EMG’s, posture) using Generalized Additive Modeling for each movement condition, setting participants as random intercept. To reduce over-estimation of any effects, we also accounted in the model for the autocorrelation of the residuals. Based on the predicted non-linear slopes that we generated for an interval of 600 ms we determine firstly the approximated onsets of the continuous measures. Onsets are determined as the peak in the 2nd derivative with respect to time of the GAM trajectory for a particular signal and condition. In general, we only consider the presence of onsets when the overall peak of the signal exceeds 0.75 x standard deviation from the mean (otherwise the timings reported are difficult to compare). For the figure we thus center our data based on the predicted onset that leads to the positive peak in the amplitude envelope. In this way we can isolate when the amplitude envelope starts to respond relative to the other signals. 
-Firstly, we determined from the GAM trajectories the estimated onset of the vocalization peak (i.e., the moment at which the amplitude starts to rise to peak envelope), as well as the on the onset of approximated negative peak, if present (i.e., the moment at which the amplitude starts to fall to the negative peak envelope). We learn from this that the minor negative peaks tend to precede the positive peak, suggesting a possible ‘anticipatory vocal adjustment’. Importantly, however in our supplemental materials we further show that the observed negative peaks do not happen as consistently as compared to the positive peaks (see Figure S9). This further corroborates the idea that positive peaks are directly related to physical impulses, while negative peaks are a type of correlated anticipatory/reactionary activity of the vocal system.
+## Exploring potential confounds
+### Causality direction 
+Fig. S\@ref(fig:gamtimingplotgenerated) shows the amplitude envelope and EMG activity of an interval around the movement onset. Here we have modeled the by-participant normalized (z-scale) continuous trajectories of the amplitude envelope and all the other signals (EMG’s, posture) using Generalized Additive Modeling for each movement condition, setting participants as random intercept. To reduce over-estimation of any effects, we also accounted in the model for the autocorrelation of the residuals. Based on the predicted non-linear slopes that we generated for an interval of 600 ms we determine firstly the approximated onsets of the continuous measures. Onsets are determined as the peak in the 2nd derivative with respect to time of the GAM trajectory for a particular signal and condition. In general, we only consider the presence of onsets when the overall peak of the signal exceeds 0.75 x standard deviation from the mean (otherwise the timings reported are difficult to compare). For the figure, we thus center our data based on the predicted onset that leads to the positive peak in the amplitude envelope. In this way we can isolate when the amplitude envelope starts to respond relative to the other signals. 
+Firstly, we determined from the GAM trajectories the estimated onset of the vocalization peak (i.e., the moment at which the amplitude starts to rise to peak envelope), as well as the onset of an approximated negative peak, if present (i.e., the moment at which the amplitude starts to fall to the negative peak envelope). We learn from this that the minor negative peaks tend to precede the positive peak, suggesting a possible ‘anticipatory vocal adjustment’. Importantly, however, in our supplemental materials we further show that the observed negative peaks do not happen as consistently as compared to the positive peaks (see Figure S9). This further corroborates the idea that positive peaks are directly related to physical impulses, while negative peaks are a type of correlated anticipatory/reactionary activity of the vocal system.
 
-Crucially, we find that in general before movement is observed, as indexed by the onset of the peak in wrist speed, there is a change in the center of pressure. Furthermore, muscle activity of postural muscles, such as the erector spinae during flexion conditions, can be observed even 108 milliseconds before the vocal onset. Even in cases where there are no clear activations of the postural muscles, e.g., as in the internal rotation, it can be seen that the focal muscles (e.g., pectoralis) start to activate 82 millisecond before the peak in vocal onset. Given that there is both postural and focal muscular activity that precedes the vocal onset slightly, it confirms that voice effects are not simply a cognitive anticipation of a physical impulse that actually happens later. 
+Crucially, we find that in general before movement is observed, as indexed by the onset of the peak in wrist speed, there is a change in the center of pressure. Furthermore, muscle activity of postural muscles, such as the erector spinae during flexion conditions, can be observed even 108 milliseconds before the vocal onset. Even in cases where there are no clear activations of the postural muscles, e.g., as in the internal rotation, it can be seen that the focal muscles (e.g., pectoralis) start to activate 82 millisecond before the peak in vocal onset. Given that there is both postural and focal muscular activity that precedes the vocal onset slightly, it confirms that voice effects are not simply a cognitive anticipation of a physical impulse that happens later. 
 
 ```{r generatinggams, echo = TRUE, results='hide', warning=FALSE, message = FALSE, code_folding = "Show code for generating the gams", warning = FALSE, message = FALSE}
 library(mgcv)
@@ -2613,12 +2589,12 @@ plot_grid(a, b, c, d, e,
 ```
 
 <aside>
-<span style="color: red;"> This refers to Figure 5 in the paper. Note in the current Rmarkdown we retain the rectus abdominis. As can be seen the z-normalization inflates the noise of the rectus abdominis as there is not a lot of variability across conditions.
+<span style="color: red;"> This refers to Figure 4 in the paper. Note in the current Rmarkdown we retain the rectus abdominis. As can be seen the z-normalization inflates the noise of the rectus abdominis as there is not a lot of variability across conditions.
 </span>
 </aside> 
 
-### Exploratory confounding analysis for subtle differential effects on vocalization
-From our confirmatory peak analyses we concluded that there were no reliable differences between the different movement conditions in terms of affecting the magnitude of the positive peak in vocalization. Now that we have modeled the trajectories with GAMs, we can perform a statistical test for whether the different movement-only conditions affect the vocalization amplitude envelopes in terms of their trajectory, rather than simply differing in the magnitude of the peak of the trajectory. We determine the trajectory along an interval of -500ms to +500ms relative to the onset of the arm movement (time = 0 when the movement initiates). The GAM analysis here is much more powerful as we take in millions of time series observations (as compared to the by-trial peak generation).
+### Subtle differential effects on vocalization
+From our confirmatory peak analyses, we concluded that there were no reliable differences between the different movement conditions in terms of affecting the magnitude of the positive peak in vocalization. Now that we have modeled the trajectories with GAMs, we can perform a statistical test for whether the different movement-only conditions affect the vocalization amplitude envelopes in terms of their trajectory, rather than simply differing in the magnitude of the peak of the trajectory. We determine the trajectory along an interval of -500ms to +500ms relative to the onset of the arm movement (time = 0 when the movement initiates). The GAM analysis here is much more powerful as we take in millions of time series observations (as compared to the by-trial peak generation).
 
 
 
@@ -2690,7 +2666,7 @@ smooth_stats <- data.frame(
 
 ```
 
-The GAM model with an autoregressive component, with participants as random intercepts and movement-only conditions was statistically reliable, F (`r model_stats$df`) = `r model_stats$F_stat`, p = `r model_stats$p_value`. The smooth term statistics in table S\@ref(tab:vocaltrajectorysmoothstable)) show that there was a general nonlinearity to the amplitude envelope that characterized all movement-only conditions, as evidenced by the statistically reliable smooth for time. Additionally, the flexion, external rotation, and internal rotation, had each an movement-specific pattern that was statistically reliable. This means that there are statistically robust deviations in the shaping of the amplitude envelope trajectories for different types of movement (except for the extension condition).
+The GAM model with an autoregressive component, with participants as random intercepts and movement-only conditions, was statistically reliable, F (`r model_stats$df`) = `r model_stats$F_stat`, p = `r model_stats$p_value`. The smooth term statistics in Table S\@ref(tab:vocaltrajectorysmoothstable)) show that there was a general nonlinearity to the amplitude envelope that characterized all movement-only conditions, as evidenced by the statistically reliable smooth for time. Additionally, the flexion, external rotation, and internal rotation, each had a movement-specific pattern that was statistically reliable. This means that there are statistically robust deviations in the shaping of the amplitude envelope trajectories for different types of movement (except for the extension condition).
 
 ```{r vocaltrajectorysmoothstable, echo=FALSE, message=FALSE, warning=FALSE}
 knitr::kable(smooth_stats,
@@ -2744,11 +2720,11 @@ p_overlay <- ggplot(plot_df, aes(x=time, y=ts, color=movement_condition)) +
 p_overlay
 ```
 <aside>
-<span style="color: red;"> This refers to Figure 6 in the paper.
+<span style="color: red;"> This refers to Figure 5 in the paper.
 </span>
 </aside> 
 
-### Exploratory confounding analysis: Muscle activity for the different movement and vocalization conditions
+### Muscle activity for the different movement and vocalization conditions
 
 
 ```{r simpletestofeffectsofvocal, code_folding = "Show code for assessing effects of voicing vs. expiration for the movement-only conditions"}
@@ -2849,7 +2825,7 @@ model_comparisons <- data.frame(
 
 ```
 
-Importantly, it is possible that vocalizing recruits more muscle activity in general, including the no movement condition, because the subglottal pressures are higher for vocalization due to increased air resistance of the adducted vocal folds as compared to the partially closed lips for controlled expiration. To test an overall increased erector spinae activity, rather than a differentiated increase for movement trials only, we firstly assessed whether a model predicting erector spinae activity for all movement conditions (including the no movement condition), over and above movement presence and weight conditions, was a better model than a comparison model with only movement and weight condition. This model increased explained variance, χ2(`r vocal_comparison$'Df'[2]`) = `r round(vocal_comparison$'Chisq'[2], 2)`, p = `r round(vocal_comparison$'Pr(>Chisq)'[2], 4)`, and indeed in general there was an overall increased effect of vocalization on erector spinae activity, b = `r round(vocal_effect["Estimate"], 3)`, t(`r round(vocal_effect["df"], 3)`) = `r round(vocal_effect["t value"], 3)`, p = `r round(vocal_effect["Pr(>|t|)"], 4)`. Since another model with an added interaction term of movement presence and vocal condition did not reliably improve relative to a model with simple effects, χ2(`r interaction_comparison$'Df'[2]`) = `r round(interaction_comparison$'Chisq'[2], 3)`, p = `r round(interaction_comparison$'Pr(>Chisq)'[2], 4)`, we conclude that in general vocalizations recruits higher erector spinae activity than expiration in these tasks. This thereby refutes the possibility that there is increased muscle activation in anticipation of movement perturbing the voice and thereby appearing as if arm-movement directly affects the voice. After all, in the no movement condition there is also a higher erector spinae recruitment when vocalizing vs. expiring. 
+Importantly, it is possible that vocalizing recruits more muscle activity in general, including the no movement condition, because the subglottal pressures are higher for vocalization due to increased air resistance of the adducted vocal folds as compared to the partially closed lips for controlled expiration. To test an overall increased erector spinae activity, rather than a differentiated increase for movement trials only, we first assessed whether a model predicting erector spinae activity for all movement conditions (including the no movement condition), over and above movement presence and weight conditions, was a better model than a comparison model with only movement and weight condition. This model increased explained variance, χ2(`r vocal_comparison$'Df'[2]`) = `r round(vocal_comparison$'Chisq'[2], 2)`, p = `r round(vocal_comparison$'Pr(>Chisq)'[2], 4)`, and indeed in general there was an overall increased effect of vocalization on erector spinae activity, b = `r round(vocal_effect["Estimate"], 3)`, t(`r round(vocal_effect["df"], 3)`) = `r round(vocal_effect["t value"], 3)`, p = `r round(vocal_effect["Pr(>|t|)"], 4)`. Since another model with an added interaction term of movement presence and vocal condition did not reliably improve relative to a model with simple effects, χ2(`r interaction_comparison$'Df'[2]`) = `r round(interaction_comparison$'Chisq'[2], 3)`, p = `r round(interaction_comparison$'Pr(>Chisq)'[2], 4)`, we conclude that in general vocalizations recruit higher erector spinae activity than expiration in these tasks. This thereby refutes the possibility that there is increased muscle activation in anticipation of movement perturbing the voice and thereby appearing as if arm-movement directly affects the voice. After all, in the no movement condition there is also a higher erector spinae recruitment when vocalizing vs. expiring. 
 
 ```{r codeforexpirevocalize, echo = TRUE, evaluate = FALSE, message = FALSE, warning = FALSE, code_folding = "Show code producing the descriptive plot for expiration vs. vocalization"}
 library(magick)
@@ -3030,7 +3006,7 @@ grid.arrange(peaks_pectoralis_bymovement, peaks_infraspinatus_bymovement, peaks_
 ```
 <aside>
 <span style="color: red;">
-Part of this figure is reused for Figure 7 in the paper.
+Part of this figure is reused for Figure 6 in the paper.
 </span>
 </aside>
 
