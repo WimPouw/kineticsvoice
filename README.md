@@ -22,7 +22,7 @@ View our analysis notebook online: [https://wimpouw.github.io/kineticsvoice/](ht
 
 ## 🔄 Reproducibility
 
-This project uses `renv` to ensure computational reproducibility. To reproduce our analysis environment:
+This project uses `renv` to ensure computational reproducibility. To reproduce our exact analysis environment:
 
 1. **Clone this repository**:
    ```
@@ -35,26 +35,19 @@ This project uses `renv` to ensure computational reproducibility. To reproduce o
    install.packages("renv")
    ```
 
-3. **Restore the environment** from our lockfile:
+3. **Restore the environment** from our lockfile (this can be for example run in the console when opening the notebook):
    ```r
    renv::restore()
    ```
    This will install all packages at the exact versions we used.
 
-4. **Run the R Markdown**:
-   ```r
-   rmarkdown::render("RMarkdown/analysis.Rmd")
-   ```
-
 ### Additional Reproducibility Files
 
-- `session_info_kinetics.txt`: Contains detailed information about the R session and packages
-- `renv.lock`: Records the exact package versions used in our analysis
+- `session_info_kinetics.txt`: Contains detailed information about the R session and packages (for manual checking mostly)
+- `renv.lock`: Records the exact package versions that are machine-readable and easy to reuse
 
 ## 📊 Open Data
-
 Access the complete dataset here: [https://webdav.data.ru.nl/dcc/DSC_2023.00002_259](https://webdav.data.ru.nl/dcc/DSC_2023.00002_259)
 
 ## 📧 Contact
-
 For questions or collaborations, please contact: wim.pouw@donders.ru.nl
