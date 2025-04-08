@@ -1,16 +1,60 @@
-This repository contains the analyses code for the project by Pouw, Werner, Burchardt, Selen, 'The human voice aligns with whole-body kinetics'
+# Kinetics Voice Project
 
-# notebook
-https://wimpouw.github.io/kineticsvoice/
+This repository contains the analyses code for the project by Pouw, Werner, Burchardt, Selen, 'The human voice aligns with whole-body kinetics'.
 
-# Content
-dataset - this folder will contain a link where the full dataset can be downloaded, with tracked videos, audio files, time series for balance board and EMG, and acoustics
+## 📊 Notebook
 
-docs - This contains our html pages, such as the knitted Rmarkdown file
+View our analysis notebook online: [https://wimpouw.github.io/kineticsvoice/](https://wimpouw.github.io/kineticsvoice/)
 
-RMarkdown - Contains the Rmarkdown script for generation the supporting information
+## 📁 Repository Structure
 
-pre_registration_copy - Contains a copy of the timestamped pre-registration (with redacted names)
+- **dataset**: Contains a link where the full dataset can be downloaded, including:
+  - Tracked videos
+  - Audio files
+  - Time series for balance board and EMG
+  - Acoustic measurements
 
-# Contact
-wim.pouw@donders.ru.nl
+- **docs**: Contains HTML pages, such as the knitted R Markdown file
+
+- **RMarkdown**: Contains the R Markdown script for generating the supporting information
+
+- **pre_registration_copy**: Contains a timestamped copy of the pre-registration (with redacted names)
+
+## 🔄 Reproducibility
+
+This project uses `renv` to ensure computational reproducibility. To reproduce our analysis environment:
+
+1. **Clone this repository**:
+   ```
+   git clone https://github.com/wimpouw/kineticsvoice.git
+   cd kineticsvoice
+   ```
+
+2. **Install renv** (if not already installed):
+   ```r
+   install.packages("renv")
+   ```
+
+3. **Restore the environment** from our lockfile:
+   ```r
+   renv::restore()
+   ```
+   This will install all packages at the exact versions we used.
+
+4. **Run the R Markdown**:
+   ```r
+   rmarkdown::render("RMarkdown/analysis.Rmd")
+   ```
+
+### Additional Reproducibility Files
+
+- `session_info_kinetics.txt`: Contains detailed information about the R session and packages
+- `renv.lock`: Records the exact package versions used in our analysis
+
+## 📊 Open Data
+
+Access the complete dataset here: [https://webdav.data.ru.nl/dcc/DSC_2023.00002_259](https://webdav.data.ru.nl/dcc/DSC_2023.00002_259)
+
+## 📧 Contact
+
+For questions or collaborations, please contact: wim.pouw@donders.ru.nl
