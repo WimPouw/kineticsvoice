@@ -1,5 +1,5 @@
 # The Human Voice and Whole-Body Kinetics Open Dataset
-This repository contains the open data overview and analyses code for the project by Pouw, Werner, Burchardt, Selen, 'The human voice aligns with whole-body kinetics' to appear in Proceedings of the Royal Society B: Biological Sciences.
+This repository contains the open data overview and analyses code for the project by Pouw, Werner, Burchardt, Selen, 'The human voice aligns with whole-body kinetics' to appear in *Proceedings of the Royal Society B: Biological Sciences*. Note that below other associated publications are listed, and will be maintained for any future publications (please reach out if your study makes use of this data when published).
 
 <div align="center">
   <img src="Images/datasetexample.png" alt="Overview of experimental setup and measurements" width="50%" />
