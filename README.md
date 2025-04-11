@@ -2,6 +2,8 @@
 
 This repository contains the analyses code for the project by Pouw, Werner, Burchardt, Selen, 'The human voice aligns with whole-body kinetics'.
 
+![Overview of experimental setup and measurements](datasetexample.png)
+
 ## 📊 Notebook
 
 View our analysis notebook online: [https://wimpouw.github.io/kineticsvoice/](https://wimpouw.github.io/kineticsvoice/)
