@@ -1,4 +1,4 @@
-# Repository for the "The Human Voice Aligns With Whole-Body Kinetics"
+# The Human Voice and Whole-Body Kinetics Open Dataset
 
 This repository contains the analyses code for the project by Pouw, Werner, Burchardt, Selen, 'The human voice aligns with whole-body kinetics'.
 
