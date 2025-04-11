@@ -27,8 +27,7 @@ To go directly to the citable dataset download page: https://doi.org/10.34973/p9
 - **pre_registration_copy**: Contains a timestamped copy of the pre-registration (with redacted names), for the unredacted version on OSF see here: https://osf.io/jhdq4
 
 ## 🔄 Reproducibility
-
-This project uses `renv` to ensure computational reproducibility. To reproduce our exact analysis environment:
+Should you have any issues with package version compatability or reproducing the exact results, for this project we have also used `renv` to ensure computational reproducibility. To reproduce our exact analysis environment:
 
 1. **Clone this repository**:
    ```
