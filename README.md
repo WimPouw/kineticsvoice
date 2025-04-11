@@ -8,7 +8,6 @@ This repository contains the open data overview and analyses code for the projec
 </div>
 
 ## 📊 Notebook
-
 View our analysis notebook online: [https://wimpouw.github.io/kineticsvoice/](https://wimpouw.github.io/kineticsvoice/)
 
 ## 📁 Repository Structure
