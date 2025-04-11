@@ -1,11 +1,11 @@
-# Kinetics Voice Project
+# Repository for the "The Human Voice Aligns With Whole-Body Kinetics"
 
 This repository contains the analyses code for the project by Pouw, Werner, Burchardt, Selen, 'The human voice aligns with whole-body kinetics'.
 
 <div align="center">
   <img src="Images/datasetexample.png" alt="Overview of experimental setup and measurements" width="50%" />
   <br>
-  <em>Figure 1: Overview of experimental setup</em>
+  <em>Graphical Overview of experimental setup</em>
 </div>
 
 ## 📊 Notebook
