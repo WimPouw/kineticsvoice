@@ -5,7 +5,7 @@ This repository contains the analyses code for the project by Pouw, Werner, Burc
 <div align="center">
   <img src="Images/datasetexample.png" alt="Overview of experimental setup and measurements" width="50%" />
   <br>
-  <em>Graphical Overview of experimental setup</em>
+  <em>Graphical Overview of Experimental Setup</em>
 </div>
 
 ## 📊 Notebook
