@@ -1,5 +1,5 @@
 # The Human Voice and Whole-Body Kinetics Open Dataset
-This repository contains the analyses code for the project by Pouw, Werner, Burchardt, Selen, 'The human voice aligns with whole-body kinetics' to appear in Proceedings of the Royal Society B: Biological Sciences.
+This repository contains the open data overview and analyses code for the project by Pouw, Werner, Burchardt, Selen, 'The human voice aligns with whole-body kinetics' to appear in Proceedings of the Royal Society B: Biological Sciences.
 
 <div align="center">
   <img src="Images/datasetexample.png" alt="Overview of experimental setup and measurements" width="50%" />
@@ -58,6 +58,7 @@ Access the complete large data files here: https://doi.org/10.34973/p9se-mq71
 
 ## Associated publications
 Pouw, W., Raphael, W., Burchardt, L. S., & Selen, L. P. (Accepted). The human voice aligns with whole-body kinetics. *Proceedings of the Royal Society B: Biological Sciences*.
+Pouw, W., Burchardt, L. S., Werner, R. J., & Selen, L. P. J. (2024). Movement-related muscle activity and kinetics affect human vocalization amplitude. In *Proceedings of the International Conference on the Evolution of Language (EVOLANG2024)*, Madison, USA.
 Werner, R., Selen, L., & Pouw, W. (2024). Arm movements increase acoustic markers of expiratory flow. In *Proceedings of Speech Prosody 2024*, Leiden, The Netherlands.
 
 ## 📧 Contact
