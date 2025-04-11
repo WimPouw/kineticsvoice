@@ -13,7 +13,7 @@ author:
   address: Thomas van Aquinolaan 4, 6525 AJ Nijmegen, The Netherlands
 - name: Raphael Werner
   url: https://raphael-werner.github.io/
-  affiliation: adboud University Nijmegen, Donders Institute for Brain, Cognition, and Behaviour
+  affiliation: Radboud University Nijmegen, Donders Institute for Brain, Cognition, and Behaviour
   affiliation_url: https://www.ru.nl/donders/
   orcid_id: 0000-0002-4080-7883
 - name: Lara Burchardt
@@ -23,7 +23,7 @@ author:
   orcid_id: 0000-0002-9210-7934
 - name: Luc Selen
   url: https://www.ru.nl/sensorimotorlab/people/current-members/luc-selen/
-  affiliation: adboud University Nijmegen, Donders Institute for Brain, Cognition, and Behaviour
+  affiliation: Radboud University Nijmegen, Donders Institute for Brain, Cognition, and Behaviour
   affiliation_url: https://www.ru.nl/donders/
   orcid_id: 0000-0001-5774-5415
 output:
@@ -80,25 +80,23 @@ library(broom.mixed) #for turning fitted models into tidy data frames
 library(tidyr) # data wrangling functions
 
 r_refs("references.bib")
-
-
 ```
-This document contains further information on the supporting methods and results of "The human voice aligns with whole-body kinetics".
-For clarity, it is indicated on the right, what sections in the paper the respective part refers to.
-Code chunks are hidden by default, but can be made visible by clicking "Show code".This supporting information is a computationally reproducible Rmarkdown document accessible via https://wimpouw.github.io/kineticsvoice/. Some pieces of information are repeated here in the supporting information so as to increase the self-contained nature of this computationally reproducible document.
-
 
 # Supporting methods and results
  This is a fully computationally reproducible manuscript written in R Markdown. The full dataset is available at the Donders Repository (redacted for review).
- 
+
+This document contains further information on the supporting methods and results of "The human voice aligns with whole-body kinetics".
+For clarity, it is indicated on the right, what sections in the paper the respective part refers to.
+Code chunks are hidden by default, but can be made visible by clicking "Show code".This supporting information is a computationally reproducible Rmarkdown document accessible on the github https://github.com/WimPouw/kineticsvoice and presented in html at https://wimpouw.github.io/kineticsvoice/. The full dataset needed for input to recreate this Rmarkdown reports is downloadable from here: https://doi.org/10.34973/p9se-mq71. Please note that all the high-resolution figures can be found here: https://github.com/WimPouw/kineticsvoice/tree/main/Images.
+
 <aside>
 <span style="color: red;"> This refers to the section "Supporting information" of the paper.
 </span>
 </aside>
  
 ```{r, warning = FALSE, echo = TRUE, code_folding = "Show code loading and preparing the data", message = FALSE}
-#Local data
-localfolder <- "F:/VENI_data_local/exp100/"#"C:/Users/U941163/Desktop/Raphael/projects/VENI-local/" #THIS NEEDS TO BE CHANGED
+#Local data: This points to your folder with the contents of the Donders Repository https://doi.org/10.34973/p9se-mq71
+localfolder <- "F:/VENI_data_local/exp100masked/" 
 
 #lets set all the data folders
 rawd      <- paste0(localfolder, 'Trials/')    #raw trial level data
@@ -1802,7 +1800,6 @@ modelsummarypospeaksbymuscle <- summary(pospeaks_bymuscle)$coefficients
 colnames(modelsummarypospeaksbymuscle) <- c('Estimate', 'SE', 'df', 't-value', 'p-value')
 rownames(modelsummarypospeaksbymuscle) <- c('Intercept', 'erector spinae', 'infraspinatus', 'pectoralis major', 'rectus abdominis')
 
-# also do post hoc tests
 ```
 
   A model with participant as random intercept the different peak muscle activities explained more variance than a base model predicting the overall mean, Change in Chi-Squared = `r printnum(pospeaks_bymuscle_comparison$Chisq[2])` (`r printnum(round(pospeaks_bymuscle_comparison[2,1]-pospeaks_bymuscle_comparison[1,1]))`), *p* `r printnum(ifelse(pospeaks_bymuscle_comparison[2,8] > .001, paste('=', pospeaks_bymuscle_comparison[2,8]), '< .001'))`). We also tried to fit a more complex model with random slopes for participants, but such a model did not converge. The model coefficients are given in Table S\@ref(tab:modelpospeaksbymuscle). Further, Table S\@ref(tab:modelpospeaksbymuscle) shows that peak EMG activity in all the muscles (except for the rectus abdominis) leads to statistically reliable increases in positive peaks in the amplitude envelope (with stronger effects).
@@ -1946,6 +1943,7 @@ Along with the confirmatory analyses reported above that relate to questions pos
 
 ```{r, echo = TRUE, layout="l-body-outset", code_folding = "Show code producing the correlation matrices and plots"}
 library(corx)
+library(psych)
 #correlation between positive and negative peaks in amplitude and change in center of pressure
 correlation_pospeakCOPc_infraspinatus <- ggplot(sub, aes(x = max_COPc)) +
   geom_point(aes(y = max_amp_c_around_move, color = 'infraspinatus'), size = 0.2) +
@@ -1990,7 +1988,6 @@ corr_internalrotation <- data_condition_internalrotation_rn %>%
        note = "Internal rotation") 
 #knitr::kable(corr_internalrotation$apa)
 
-
 #external rotation
 condition_externalrotation <- sub$movement_condition=='external rotation'
 data_condition_externalrotation <- cbind.data.frame(sub$max_pectoral[condition_externalrotation], sub$max_infra[condition_externalrotation], sub$max_rectus[condition_externalrotation], sub$max_erector[condition_externalrotation], sub$max_COPc[condition_externalrotation], sub$max_amp_c_around_move[condition_externalrotation])
@@ -2012,11 +2009,9 @@ corr_externalrotation <- data_condition_externalrotation_rn %>%
        note = "External rotation") 
 #knitr::kable(corr_externalrotation$apa)
 
-
 #extension
 condition_extension <- sub$movement_condition=='extension'
 data_condition_extension <- cbind.data.frame(sub$max_pectoral[condition_extension], sub$max_infra[condition_extension], sub$max_rectus[condition_extension], sub$max_erector[condition_extension], sub$max_COPc[condition_extension], sub$max_amp_c_around_move[condition_extension])
-#cor.test(sub$max_rectus[condition_extension], sub$max_COPc[condition_extension])
 
 #rename columns
 data_condition_extension_rn <- data_condition_extension %>% 
@@ -2034,7 +2029,6 @@ corr_extension <- data_condition_extension_rn %>%
        stars    = c(0.05, 0.01, 0.001),
        note = "Extension")
 #knitr::kable(corr_extension$apa)
-
 
 #flexion
 condition_flexion <- sub$movement_condition=='flexion'
@@ -2056,7 +2050,6 @@ corr_flexion <- data_condition_flexion_rn %>%
        stars    = c(0.05, 0.01, 0.001),
        note = "Flexion") 
 #knitr::kable(corr_flexion$apa)
-
 
 #very stable correlation of posture and internal rotation
 correlation_posture_internalrotation <- sub %>% 
@@ -3000,7 +2993,7 @@ peaks_voice_bymovement <- ggplot(sub, aes(x = movement_condition, y=max_amp_c_ar
 
 ```
 
-```{r movementpeakmuscleactivity1, echo = FALSE, fig.cap = "Muscle and postural activations for vocalization versus expiration.", fig.height = 20}
+```{r movementpeakmuscleactivity1, warning=FALSE, echo = FALSE, fig.cap = "Muscle and postural activations for vocalization versus expiration.", fig.height = 20}
 grid.arrange(peaks_pectoralis_bymovement, peaks_infraspinatus_bymovement, peaks_rectus_bymovement, peaks_erector_bymovement,peaks_COP_bymovement, 
              peaks_kinematicssp_bymovement, peaks_kinematicsacc_bymovement, peaks_voice_bymovement, ncol = 2)
 ```
@@ -3079,4 +3072,24 @@ descriptivesbymusclesmovement <- descriptivesbymusclesmovement %>%
 knitr::kable(descriptivesbymusclesmovement,
              caption = "Normalized peak muscle activity for the different movement conditions and vocalization conditions. These are the numerical results associated with Fig. S11 and Figure 7. The values indicate the peak EMG activity normalized for each muscle.") %>% 
   kable_paper("hover", full_width = T)
+```
+
+# Notes on computational reproducibility
+We have saved the session info to a separate file for manually checking package versioning, additionally we have ran an renv.lock to provide a copy of the exact package environment.
+
+```{r reproducibility, message = FALSE, warning =FALSE}
+#library(renv)
+
+# Initialize renv if not already initialized (will only run if no renv.lock exists)
+#if (!file.exists("renv.lock")) {
+#  renv::init()
+#}
+
+# Create a snapshot of the current environment
+#renv::snapshot()
+
+# Save session info to a file
+sink("session_info_kinetics.txt")
+sessionInfo()
+sink()
 ```
