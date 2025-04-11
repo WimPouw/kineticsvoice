@@ -8,11 +8,13 @@ View our analysis notebook online: [https://wimpouw.github.io/kineticsvoice/](ht
 
 ## 📁 Repository Structure
 
-- **dataset**: Contains a link where the full dataset can be downloaded, including:
+- **dataset**: Contains a link to the Donders Repository where the full dataset can be downloaded, including:
   - Tracked videos
   - Audio files
   - Time series for balance board and EMG
   - Acoustic measurements
+
+To go directly to the citable dataset download page: https://doi.org/10.34973/p9se-mq71
 
 - **docs**: Contains HTML pages, such as the knitted R Markdown file
 
