@@ -55,7 +55,7 @@ This project uses `renv` to ensure computational reproducibility. To reproduce o
 - `renv.lock`: Records the exact package versions that are machine-readable and easy to reuse
 
 ## 📊 Open Data
-Access the complete dataset here: [https://webdav.data.ru.nl/dcc/DSC_2023.00002_259](https://webdav.data.ru.nl/dcc/DSC_2023.00002_259)
+Access the complete large data files here: https://doi.org/10.34973/p9se-mq71
 
 ## 📧 Contact
-For questions or collaborations, please contact: wim.pouw@donders.ru.nl
+For questions or collaborations, please contact: wim.pouw@donders.ru.nl or go to www.wimpouw.com
