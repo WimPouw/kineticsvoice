@@ -53,7 +53,9 @@ This project uses `renv` to ensure computational reproducibility. To reproduce o
 - `renv.lock`: Records the exact package versions that are machine-readable and easy to reuse
 
 ## 📊 Open Data
-Access the complete large data files here: https://doi.org/10.34973/p9se-mq71
+Access the complete large data files at the Radboud Data Repository
+* DOI: https://doi.org/10.34973/p9se-mq71
+* Location: https://data.ru.nl/collections/di/dcc/DSC_2023.00002_259
 
 ## Associated publications
 * Pouw, W., Raphael, W., Burchardt, L. S., & Selen, L. P. (Accepted). The human voice aligns with whole-body kinetics. *Proceedings of the Royal Society B: Biological Sciences*.
