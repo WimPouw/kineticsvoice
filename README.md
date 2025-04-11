@@ -25,7 +25,7 @@ To go directly to the citable dataset download page: https://doi.org/10.34973/p9
 
 - **RMarkdown**: Contains the R Markdown script for generating the supporting information
 
-- **pre_registration_copy**: Contains a timestamped copy of the pre-registration (with redacted names)
+- **pre_registration_copy**: Contains a timestamped copy of the pre-registration (with redacted names), for the unredacted version on OSF see here: https://osf.io/jhdq4
 
 ## 🔄 Reproducibility
 
