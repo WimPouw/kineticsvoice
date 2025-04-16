@@ -2999,7 +2999,7 @@ grid.arrange(peaks_pectoralis_bymovement, peaks_infraspinatus_bymovement, peaks_
 ```
 <aside>
 <span style="color: red;">
-Part of this figure is reused for Figure 6 in the paper.
+Referred to as figure S12 in the paper.
 </span>
 </aside>
 
