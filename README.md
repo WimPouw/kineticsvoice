@@ -57,9 +57,10 @@ Access the complete large data files at the Radboud Data Repository
 * Location: https://data.ru.nl/collections/di/dcc/DSC_2023.00002_259
 
 ## Associated publications
-* Pouw, W., Raphael, W., Burchardt, L. S., & Selen, L. P. (Accepted). The human voice aligns with whole-body kinetics. *Proceedings of the Royal Society B: Biological Sciences*.
+* Pouw, W., Werner, R., Burchardt, L. S., & Selen, L. P. (2025). The human voice aligns with whole-body kinetics. Proceedings B, 292(2047), 20250160. [https://doi.org/10.1098/rspb.2025.0160](https://doi.org/10.1098/rspb.2025.0160).
 * Pouw, W., Burchardt, L. S., Werner, R. J., & Selen, L. P. J. (2024). Movement-related muscle activity and kinetics affect human vocalization amplitude. In *Proceedings of the International Conference on the Evolution of Language (EVOLANG2024)*, Madison, USA.
 * Werner, R., Selen, L., & Pouw, W. (2024). Arm movements increase acoustic markers of expiratory flow. In *Proceedings of Speech Prosody 2024*, Leiden, The Netherlands.
+* Hafkamp, M. S., Werner, R., Drijvers, L., Selen, L., & Pouw, W. (2025). Dissociating Mechanisms of Heart-Voice Coupling. bioRxiv, 2025-12.
 
 ## 📧 Contact
-For questions or collaborations, please contact: wim.pouw@donders.ru.nl or go to www.wimpouw.com
+For questions or collaborations, please contact: w.pouw@tilbuguniversity.edu or go to www.wimpouw.com
