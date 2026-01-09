@@ -7,10 +7,10 @@ This repository contains the open data overview and analyses code for the projec
   <em>Graphical Overview of Experimental Setup</em>
 </div>
 
-## 📊 Notebook
+## Notebook
 View our analysis notebook online: [https://wimpouw.github.io/kineticsvoice/](https://wimpouw.github.io/kineticsvoice/)
 
-## 📁 Repository Structure
+## Repository Structure
 
 - **dataset**: Contains a link to the Donders Repository where the full dataset can be downloaded, including:
   - Tracked videos
@@ -26,7 +26,7 @@ To go directly to the citable dataset download page: https://doi.org/10.34973/p9
 
 - **pre_registration_copy**: Contains a timestamped copy of the pre-registration (with redacted names), for the unredacted version on OSF see here: https://osf.io/jhdq4
 
-## 🔄 Reproducibility
+## Reproducibility
 Should you have any issues with package version compatability or reproducing the exact results, for this project we have also used `renv` to ensure computational reproducibility. To reproduce our exact analysis environment:
 
 1. **Clone this repository**:
@@ -51,7 +51,7 @@ Should you have any issues with package version compatability or reproducing the
 - `session_info_kinetics.txt`: Contains detailed information about the R session and packages (for manual checking mostly)
 - `renv.lock`: Records the exact package versions that are machine-readable and easy to reuse
 
-## 📊 Open Data
+## Open Data
 Access the complete large data files at the Radboud Data Repository
 * DOI: https://doi.org/10.34973/p9se-mq71
 * Location: https://data.ru.nl/collections/di/dcc/DSC_2023.00002_259
@@ -62,5 +62,5 @@ Access the complete large data files at the Radboud Data Repository
 * Werner, R., Selen, L., & Pouw, W. (2024). Arm movements increase acoustic markers of expiratory flow. In *Proceedings of Speech Prosody 2024*, Leiden, The Netherlands.
 * Hafkamp, M. S., Werner, R., Drijvers, L., Selen, L., & Pouw, W. (2025). Dissociating Mechanisms of Heart-Voice Coupling. bioRxiv, 2025-12.
 
-## 📧 Contact
+## Contact
 For questions or collaborations, please contact: w.pouw@tilbuguniversity.edu or go to www.wimpouw.com
